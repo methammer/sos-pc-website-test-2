@@ -211,7 +211,6 @@ if (apiKey) {
                 src={portfolioPreviews[item.id] || item.placeholderImg} 
                 alt={item.altText} 
                 class="vitrine-image"
-                loading="lazy"
               />
               <div class="vitrine-content">
                 <h3>{item.name}</h3>
@@ -315,7 +314,7 @@ if (apiKey) {
       centeredSlides: true,
       loop: true,
       slidesPerView: 'auto',
-      autoHeight: true, 
+      watchSlidesProgress: true,
       coverflowEffect: {
         rotate: 50,
         stretch: 0,
@@ -651,7 +650,11 @@ if (apiKey) {
 		width: 60%; /* Default width, overridden in media queries */
 		max-width: 400px; /* Max width for larger screens */
 		border-radius: 8px;
-		/* overflow: hidden; Swiper handles overflow for effects */
+		/* --- Optimizations for smooth animation --- */
+		/* REMOVED: transition: transform 0.4s ease, opacity 0.4s ease; */
+		-webkit-backface-visibility: hidden; /* Safari */
+		backface-visibility: hidden; /* Standard */
+		transform: translate3d(0,0,0); /* Promote to own layer */
 	}
 	.swiper-slide:not(.swiper-slide-active) {
 		opacity: 0.7;
