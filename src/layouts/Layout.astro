@@ -1,0 +1,318 @@
+---
+import Navbar from '../components/Navbar.astro';
+import AsciiBackground from '../components/AsciiBackground.astro';
+import CoverPage from '../components/CoverPage.astro'; // Import the CoverPage component
+
+interface Props {
+	title: string;
+	description?: string;
+}
+
+const { title, description = "SOS-PC - Solutions informatiques et web" } = Astro.props;
+const maxNavbarHeight = "80px"; // Adjusted navbar height
+---
+
+<!doctype html>
+<html lang="fr">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="description" content={description} />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<link rel="icon" type="image/png" href="/logo.png" /> {/* Updated favicon path */}
+		<meta name="generator" content={Astro.generator} />
+		<title>{title} | SOS-PC</title>
+		{/* Add Open Graph og:image meta tag if not already present, or update existing one */}
+		<meta property="og:image" content="/logo.png" /> {/* Updated OG image path */}
+		<style define:vars={{ maxNavbarHeight }}>
+			html {
+				scroll-padding-top: var(--maxNavbarHeight);
+				scroll-behavior: smooth;
+			}
+      /* Prevent scroll on body while cover page is active */
+      body.cover-active {
+        overflow: hidden;
+        /* On some systems, scrollbar might still be there, taking space.
+           This is a common issue. For a perfect solution, more complex JS might be needed
+           to calculate scrollbar width and add padding, or use position:fixed on body.
+           For now, overflow:hidden is the simplest approach. */
+      }
+		</style>
+		{/* Inline script to set initial theme to prevent FOUC (Flash of Unstyled Content) */}
+		<script is:inline>
+			const theme = (() => {
+				if (typeof localStorage !== 'undefined' && localStorage.getItem('theme')) {
+					return localStorage.getItem('theme');
+				}
+				if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+					return 'dark';
+				}
+				return 'light';
+			})();
+
+			if (theme === 'dark') {
+				document.documentElement.classList.add('dark');
+			} else {
+				document.documentElement.classList.remove('dark'); // Ensure light is default if no class
+			}
+		</script>
+	</head>
+	<body>
+    <CoverPage /> {/* Add CoverPage here, it will control its own visibility */}
+    <AsciiBackground />
+		<Navbar />
+		<main tabindex="-1"> {/* Added tabindex for programmatic focus */}
+			<slot />
+		</main>
+		<footer>
+			<p>&copy; {new Date().getFullYear()} SOS-PC. Tous droits réservés.</p>
+		</footer>
+    <script>
+      // Script to add/remove 'cover-active' class on body based on CoverPage state
+      document.addEventListener('DOMContentLoaded', () => {
+        const coverPage = document.getElementById('sos-pc-cover-page'); // ID from CoverPage.astro
+        const body = document.body;
+        const dismissedKey = 'sospc_cover_dismissed_session_v1'; // Must match key in CoverPage.astro
+
+        if (!coverPage) return;
+
+        function updateBodyScrollState() {
+          let isCoverDismissedBySession = false;
+          try {
+            isCoverDismissedBySession = sessionStorage.getItem(dismissedKey) === 'true';
+          } catch(e) { /* ignore */ }
+
+          // If coverPage has 'dismissed' class OR if it was dismissed in session (and might be hidden by its own script)
+          if (coverPage.classList.contains('dismissed') || isCoverDismissedBySession) {
+            body.classList.remove('cover-active');
+          } else {
+            body.classList.add('cover-active');
+          }
+        }
+
+        updateBodyScrollState(); // Set initial state
+
+        // Observe CoverPage for class changes (when it gets 'dismissed')
+        const observer = new MutationObserver((mutationsList) => {
+          for (const mutation of mutationsList) {
+            if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+              updateBodyScrollState();
+              // If cover is now dismissed, we can stop observing
+              if (coverPage.classList.contains('dismissed')) {
+                observer.disconnect();
+              }
+              break; // Only need to check one mutation if class attribute changed
+            }
+          }
+        });
+        
+        // Only start observing if the cover page is not already dismissed by session logic
+        // (The CoverPage.astro script handles adding 'dismissed' class if session key is found)
+        if (!coverPage.classList.contains('dismissed')) {
+            observer.observe(coverPage, { attributes: true, attributeFilter: ['class'] });
+        }
+      });
+    </script>
+	</body>
+</html>
+<style define:vars={{ maxNavbarHeight }} is:global>
+	:root {
+		--accent: 136, 58, 234;
+		--accent-light: 224, 204, 250;
+		--accent-dark: 49, 10, 101;
+		--accent-gradient: linear-gradient(
+			45deg,
+			rgb(var(--accent)),
+			rgb(var(--accent-light)) 30%,
+			white 60%
+		);
+
+		/* Light Theme Variables (Default) */
+		--bg-color: #F0F2F5; /* Light grey background */
+		--text-color: #1c1e21; /* Dark grey text */
+		--card-bg-color: #FFFFFF; /* White card background */
+		--card-text-color: #333333;
+		--border-color: #d1d5db; /* Light border color */
+		--navbar-bg-color: rgba(255, 255, 255, 0.85);
+		--navbar-border-color: #e5e7eb;
+		--navbar-link-color: #374151;
+		--footer-bg-color: rgba(243, 244, 246, 0.9);
+		--footer-text-color: #4b5563;
+		--theme-icon-color: #1c1e21; /* Icon color for light theme */
+		--main-bg-color: rgba(255, 255, 255, 0.95); /* Main content background for light theme */
+		--heading-color: rgb(var(--accent-dark)); /* Darker accent for headings in light mode */
+		--link-color: rgb(var(--accent));
+		--code-bg: rgba(var(--accent-dark), 0.1);
+		--code-color: rgb(var(--accent-dark));
+		--section-hover-bg: rgba(0, 0, 0, 0.03);
+		--section-separator-color: rgb(var(--accent-dark));
+		--button-bg-color: rgb(var(--accent));
+		--button-text-color: white;
+		--button-hover-bg-color: rgb(var(--accent-dark));
+		--input-bg-color: #f9fafb;
+		--input-text-color: #111827;
+		--input-border-color: #d1d5db;
+		--input-focus-border-color: rgb(var(--accent));
+		--input-focus-shadow-color: rgba(var(--accent), 0.3);
+		--contact-button-bg: #e5e7eb;
+		--contact-button-text: #1f2937;
+		--contact-button-border: #d1d5db;
+		--contact-button-hover-bg: #d1d5db;
+
+		/* Original Dark Theme Gradient Colors (can be used for ASCII background or specific elements) */
+		--gradient-color-1: #1A0F2A;
+		--gradient-color-2: #301E59;
+		--gradient-color-3: #4A2F8C;
+		--gradient-color-4: #251A40;
+	}
+
+	html.dark {
+		/* Dark Theme Variables */
+		--bg-color: var(--gradient-color-1); /* Using one of the dark purples for base */
+		--text-color: #e0e0e0; /* Light grey text for dark mode */
+		--card-bg-color: #23262d; /* Dark card background */
+		--card-text-color: #c0c0c0;
+		--border-color: #444; /* Darker border color */
+		--navbar-bg-color: rgba(35, 38, 45, 0.9);
+		--navbar-border-color: #444;
+		--navbar-link-color: #e0e0e0;
+		--footer-bg-color: rgba(35, 38, 45, 0.85);
+		--footer-text-color: #a0a0a0;
+		--theme-icon-color: white; /* Icon color for dark theme */
+		--main-bg-color: rgba(19, 21, 26, 0.85); /* Main content background for dark theme */
+		--heading-color: rgb(var(--accent-light)); /* Lighter accent for headings in dark mode */
+		--link-color: rgb(var(--accent-light));
+		--code-bg: rgba(var(--accent-light), 0.12);
+		--code-color: rgb(var(--accent-light));
+		--section-hover-bg: rgba(35, 38, 45, 0.3);
+		--section-separator-color: rgb(var(--accent));
+		--button-bg-color: rgb(var(--accent));
+		--button-text-color: white;
+		--button-hover-bg-color: rgb(var(--accent-dark));
+		--input-bg-color: #1a1c22;
+		--input-text-color: white;
+		--input-border-color: #444;
+		--input-focus-border-color: rgb(var(--accent-light));
+		--input-focus-shadow-color: rgba(var(--accent-light), 0.4);
+		--contact-button-bg: #333;
+		--contact-button-text: white;
+		--contact-button-border: #555;
+		--contact-button-hover-bg: #444;
+	}
+
+	/* Define the animation */
+	@keyframes gradientAnimation {
+		0% { background-position: 0% 50%; }
+		50% { background-position: 100% 50%; }
+		100% { background-position: 0% 50%; }
+	}
+
+	html {
+		font-family: system-ui, sans-serif;
+		background-color: var(--bg-color); /* Use CSS variable */
+		color: var(--text-color); /* Use CSS variable */
+		line-height: 1.6;
+		transition: background-color 0.3s ease, color 0.3s ease;
+	}
+	body {
+		display: flex;
+		flex-direction: column;
+		min-height: 100vh;
+		margin: 0;
+		padding-top: var(--maxNavbarHeight);
+    /* AsciiBackground will handle its own background, body can have a fallback */
+    background-color: var(--bg-color); /* Fallback if AsciiBackground is transparent or fails */
+	}
+	main {
+		flex-grow: 1;
+		margin: 0 auto;
+		padding: 1.5rem;
+		width: 100%;
+		max-width: 120ch; /* UPDATED: Decreased max-width from 140ch to 120ch */
+		box-sizing: border-box;
+		background-color: var(--main-bg-color); /* Use CSS variable */
+		border-radius: 8px;
+		margin-top: 2rem;
+		margin-bottom: 2rem;
+		box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    position: relative;
+    z-index: 1;
+		transition: background-color 0.3s ease;
+	}
+
+	footer {
+		background-color: var(--footer-bg-color); /* Use CSS variable */
+		padding: 1rem 1.5rem;
+		text-align: center;
+		font-size: 0.9em;
+		color: var(--footer-text-color); /* Use CSS variable */
+    position: relative;
+    z-index: 1;
+		transition: background-color 0.3s ease, color 0.3s ease;
+	}
+	h1, h2, h3, h4, h5, h6 {
+		color: var(--heading-color); /* Use CSS variable */
+		margin-top: 1.5em;
+		margin-bottom: 0.5em;
+		transition: color 0.3s ease;
+	}
+	h1 {
+		font-size: 2.5rem;
+		text-align: center;
+		margin-top: 0;
+	}
+	h2 {
+		font-size: 1.8rem;
+	}
+	h3 {
+		font-size: 1.4rem;
+	}
+	p {
+		margin-bottom: 1em;
+	}
+	ul {
+		list-style: disc;
+		padding-left: 1.5rem;
+	}
+	a {
+		color: var(--link-color);
+		transition: color 0.3s ease;
+	}
+	a:hover {
+		color: var(--accent-dark); /* Consider a hover variable if needed */
+	}
+	html.dark a:hover {
+		color: white; /* Brighter hover for dark mode links */
+	}
+
+	code {
+		font-family:
+			Menlo,
+			Monaco,
+			Lucida Console,
+			Liberation Mono,
+			DejaVu Sans Mono,
+			Bitstream Vera Sans Mono,
+			Courier New,
+			monospace;
+		background: var(--code-bg); /* Use CSS variable */
+		color: var(--code-color); /* Use CSS variable */
+		border-radius: 4px;
+		padding: 0.3em 0.4em;
+		font-size: 0.9em;
+		transition: background-color 0.3s ease, color 0.3s ease;
+	}
+
+	/* Responsive Font Size Adjustments */
+	@media (max-width: 640px) {
+		h1 { font-size: 2rem; }
+		h2 { font-size: 1.6rem; }
+		h3 { font-size: 1.2rem; }
+		body { font-size: 0.95rem; }
+		main {
+			margin-top: 1rem;
+			margin-bottom: 1rem;
+			padding: 1rem;
+			max-width: 95%; /* On small screens, use percentage for better fit */
+		}
+	}
+</style>

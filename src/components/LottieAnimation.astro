@@ -1,0 +1,102 @@
+---
+// src/components/LottieAnimation.astro
+export interface Props {
+  path: string; // Path to the Lottie JSON file (e.g., in /public or an external URL)
+  width?: string;
+  height?: string;
+  loop?: boolean;
+  autoplay?: boolean;
+}
+
+const {
+  path,
+  width = '300px',
+  height = '300px',
+  loop = true,
+  autoplay = true
+} = Astro.props;
+
+const animationId = `lottie-container-${Math.random().toString(36).substring(2, 9)}`;
+---
+
+<div id={animationId} style={`width: ${width}; height: ${height}; margin: 0 auto; border: 2px dashed red; /* Temporary debug border */`}></div>
+
+<script define:vars={{ animationPath: path, containerId: animationId, loopOpt: loop, autoplayOpt: autoplay }}>
+  import lottie from 'lottie-web/build/player/lottie_light.js';
+
+  console.log(`[Lottie] Script for ${containerId} (path: ${animationPath}) loaded.`);
+
+  const initLottieAnimation = () => {
+    console.log(`[Lottie] Attempting to init ${containerId} (path: ${animationPath})`);
+    const container = document.getElementById(containerId);
+
+    if (!container) {
+      console.error(`[Lottie] CRITICAL: Container with ID "${containerId}" not found for path "${animationPath}". Animation cannot start.`);
+      return;
+    }
+    console.log(`[Lottie] Container ${containerId} found:`, container);
+    console.log(`[Lottie] Container dimensions: ${container.offsetWidth}x${container.offsetHeight}`);
+
+
+    if (container.dataset.lottieInitialized === 'true') {
+      console.log(`[Lottie] Animation for "${containerId}" already initialized.`);
+      return;
+    }
+    container.dataset.lottieInitialized = 'true';
+    console.log(`[Lottie] Initializing Lottie for ${containerId} with path: ${animationPath}`);
+
+    try {
+      const anim = lottie.loadAnimation({
+        container: container,
+        renderer: 'svg',
+        loop: loopOpt,
+        autoplay: autoplayOpt,
+        path: animationPath
+      });
+      console.log(`[Lottie] lottie.loadAnimation called for ${containerId}. Animation object:`, anim);
+
+      anim.addEventListener('DOMLoaded', () => {
+        console.log(`[Lottie] SUCCESS: Animation DOM loaded for ${containerId} (${animationPath})`);
+      });
+
+      anim.addEventListener('data_failed', () => {
+        console.error(`[Lottie] ERROR: Data_failed for ${containerId} (path: ${animationPath}). Check JSON validity and accessibility. Network tab might show 404 if path is wrong.`);
+        container.innerHTML = `<p style="color: red; text-align: center; font-size: 0.8em; padding: 10px;">Error: Failed to load Lottie animation data from ${animationPath}.</p>`;
+      });
+
+      anim.addEventListener('error', (errorEvent) => {
+        console.error(`[Lottie] ERROR: Generic Lottie error for ${containerId} (path: ${animationPath}):`, errorEvent);
+        container.innerHTML = `<p style="color: red; text-align: center; font-size: 0.8em; padding: 10px;">Error: Lottie animation error for ${animationPath}.</p>`;
+      });
+
+      if (!anim) {
+        console.error(`[Lottie] ERROR: lottie.loadAnimation returned null or undefined for ${containerId}.`);
+      }
+
+    } catch (error) {
+      console.error(`[Lottie] CRITICAL ERROR: Exception during lottie.loadAnimation for ${containerId} (path: ${animationPath}):`, error);
+      if (container) {
+        container.innerHTML = `<p style="color: red; text-align: center; font-size: 0.8em; padding: 10px;">Error initializing Lottie for ${animationPath}.</p>`;
+      }
+    }
+  };
+
+  if (document.readyState === 'loading') {
+    console.log(`[Lottie] ${containerId}: DOM not ready, adding DOMContentLoaded listener.`);
+    document.addEventListener('DOMContentLoaded', initLottieAnimation);
+  } else {
+    console.log(`[Lottie] ${containerId}: DOM already ready, calling initLottieAnimation directly.`);
+    initLottieAnimation();
+  }
+
+  // Re-initialize on Astro's view transitions events
+  document.addEventListener('astro:page-load', () => {
+    console.log(`[Lottie] ${containerId}: astro:page-load event triggered. Re-initializing.`);
+    // Reset initialized flag to allow re-initialization
+    const container = document.getElementById(containerId);
+    if (container) container.dataset.lottieInitialized = 'false';
+    initLottieAnimation();
+  });
+
+  // document.addEventListener('astro:after-swap', initLottieAnimation); // Usually page-load is sufficient
+</script>

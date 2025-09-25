@@ -1,0 +1,423 @@
+---
+import ThemeSwitcher from './ThemeSwitcher.astro';
+
+// Define navigation links - adjust hrefs and text as needed
+const navLinks = [
+  { href: "/", text: "Accueil", id: "home" },
+  { href: "/#services", text: "Services", id: "services" },
+  { href: "#vitrine", text: "Portfolio", id: "vitrine" }, // Reverted to intended values
+  { href: "/#contact", text: "Contact", id: "contact" },
+];
+
+// You can retrieve this from a global config or define it here
+const siteTitle = "SOS-PC"; 
+---
+<nav id="main-navbar" aria-label="Navigation principale">
+  <div class="nav-container">
+    <div class="logo-container">
+      <img src="/logo.png" alt={`${siteTitle} Logo`} id="navbar-logo" />
+      <a href="/" class="logo-text-anchor" aria-label={`Retour à la page d'accueil de ${siteTitle}`}>
+        <span class="logo-text">{siteTitle}</span>
+      </a>
+    </div>
+    
+    <button class="hamburger-menu" aria-label="Ouvrir le menu de navigation" aria-expanded="false" aria-controls="nav-links-list">
+      <span class="hamburger-icon"></span>
+    </button>
+
+    <ul class="nav-links" id="nav-links-list">
+      {navLinks.map(link => (
+        <li><a href={link.href} data-navid={link.id}>{link.text}</a></li>
+      ))}
+    </ul>
+
+    <div class="theme-switcher-container">
+      <ThemeSwitcher />
+    </div>
+  </div>
+</nav>
+
+<style define:vars={{ siteTitle }}>
+  :root {
+    --navbar-internal-height: var(--maxNavbarHeight, 80px); 
+  }
+
+  nav#main-navbar {
+    background-color: var(--navbar-bg-color);
+    border-bottom: 1px solid var(--navbar-border-color);
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+    box-sizing: border-box;
+    height: var(--navbar-internal-height);
+    padding: 0 1.5rem;
+    display: flex;
+    align-items: center;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+  }
+
+  .nav-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    max-width: var(--max-content-width, 1200px);
+    margin: 0 auto;
+  }
+
+  .logo-container { /* Changed from <a> to <div> */
+    display: flex;
+    align-items: center;
+  }
+
+  #navbar-logo {
+    height: calc(var(--navbar-internal-height) - 30px);
+    max-height: 50px;
+    width: auto;
+    cursor: pointer; /* For bounce animation */
+    margin-right: 10px;
+    transition: transform 0.3s ease;
+  }
+  
+  .logo-text-anchor {
+    text-decoration: none;
+    display: inline-flex; /* Aligns inner content if any, and behaves well in flex parent */
+    align-items: center;
+  }
+
+  .logo-text {
+    font-size: clamp(1.2rem, 3vw, 1.5rem);
+    font-weight: bold;
+    color: var(--heading-color);
+    transition: color 0.3s ease;
+  }
+
+  .logo-text-anchor:hover .logo-text {
+    color: var(--accent);
+  }
+  html.dark .logo-text-anchor:hover .logo-text {
+    color: rgb(var(--accent-light));
+  }
+
+  #navbar-logo.bounce {
+    animation: logoBounce 0.7s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+  }
+
+  @keyframes logoBounce {
+    0%, 100% { transform: scale(1) translateY(0); }
+    10% { transform: scale(1.1, 0.9) translateY(0); }
+    30% { transform: scale(0.9, 1.1) translateY(-10px); }
+    50% { transform: scale(1.05, 0.95) translateY(0); }
+    70% { transform: scale(1) translateY(-5px); }
+    90% { transform: scale(1) translateY(0); }
+  }
+
+  .nav-links {
+    list-style: none;
+    display: flex;
+    gap: clamp(1rem, 2.5vw, 1.75rem);
+    margin: 0;
+    align-items: center; 
+  }
+
+  .nav-links a {
+    text-decoration: none;
+    color: var(--navbar-link-color);
+    font-weight: 500;
+    font-size: clamp(0.9rem, 2vw, 1rem);
+    padding: 0.5rem 0.25rem;
+    position: relative;
+    transition: color 0.3s ease;
+  }
+
+  .nav-links a::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: var(--accent);
+    transition: width 0.3s ease-in-out;
+  }
+
+  .nav-links a:hover,
+  .nav-links a.active {
+    color: var(--accent);
+  }
+  html.dark .nav-links a:hover,
+  html.dark .nav-links a.active {
+    color: rgb(var(--accent-light));
+  }
+
+  .nav-links a:hover::after,
+  .nav-links a.active::after {
+    width: 100%;
+  }
+  
+  .theme-switcher-container {
+    display: flex;
+    align-items: center;
+  }
+
+  .hamburger-menu {
+    display: none; 
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 10px;
+    z-index: 1001; 
+  }
+
+  .hamburger-icon {
+    display: block;
+    width: 24px;
+    height: 2px;
+    background-color: var(--navbar-link-color);
+    position: relative;
+    transition: background-color 0.3s ease;
+  }
+
+  .hamburger-icon::before,
+  .hamburger-icon::after {
+    content: '';
+    position: absolute;
+    width: 24px;
+    height: 2px;
+    background-color: var(--navbar-link-color);
+    left: 0;
+    transition: transform 0.3s ease, top 0.3s ease, bottom 0.3s ease, background-color 0.3s ease;
+  }
+
+  .hamburger-icon::before {
+    top: -7px;
+  }
+
+  .hamburger-icon::after {
+    bottom: -7px;
+  }
+
+  .hamburger-menu.active .hamburger-icon {
+    background-color: transparent; 
+  }
+  .hamburger-menu.active .hamburger-icon::before {
+    top: 0;
+    transform: rotate(45deg);
+  }
+  .hamburger-menu.active .hamburger-icon::after {
+    bottom: 0;
+    transform: rotate(-45deg);
+  }
+  html.dark .hamburger-icon,
+  html.dark .hamburger-icon::before,
+  html.dark .hamburger-icon::after {
+    background-color: var(--navbar-link-color); 
+  }
+
+
+  @media (max-width: 768px) {
+    nav#main-navbar {
+      padding: 0 1rem;
+    }
+    #navbar-logo {
+       height: calc(var(--navbar-internal-height) - 36px);
+       max-height: 40px;
+    }
+
+    .hamburger-menu {
+      display: block; 
+      order: 3; 
+    }
+    
+    .theme-switcher-container {
+      order: 2; 
+      margin-left: auto; 
+    }
+
+    .nav-links { 
+      position: absolute;
+      top: var(--navbar-internal-height); 
+      left: 0;
+      width: 100%;
+      background-color: var(--navbar-bg-color);
+      border-top: 1px solid var(--navbar-border-color);
+      flex-direction: column; 
+      align-items: center; 
+      gap: 0.5rem;
+      
+      max-height: 0; 
+      overflow: hidden;
+      padding-top: 0; 
+      padding-bottom: 0; 
+      
+      transition: max-height 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), 
+                  padding-top 0.4s ease, 
+                  padding-bottom 0.4s ease;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .nav-links.nav-active {
+      max-height: 500px; 
+      padding-top: 1rem; 
+      padding-bottom: 1rem; 
+    }
+
+    .nav-links a {
+      font-size: 1.1rem; 
+      padding: 0.75rem 1rem;
+      width: 100%;
+      text-align: center;
+    }
+    .nav-links a::after { 
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: 0.5rem; 
+    }
+  }
+
+  @media (max-width: 480px) {
+    .logo-text-anchor { 
+      /* Styles for the anchor if needed on small screens */
+    }
+    .logo-text { 
+      /* display: none;  <- This line was removed */
+      /* You might want to adjust font-size or other properties here if needed */
+      font-size: clamp(1rem, 2.5vw, 1.2rem); /* Example: slightly smaller font */
+    }
+    .nav-links a {
+        font-size: 1rem;
+    }
+  }
+</style>
+
+<script>
+  // VERY IMPORTANT: Check if this log appears in the console
+  console.log('Navbar.astro SCRIPT TAG EXECUTED'); 
+
+  function initializeNavbar() {
+    console.log('DOMContentLoaded event fired. Initializing navbar script.');
+
+    const logoElement = document.getElementById('navbar-logo'); // This is the <img> tag
+    const hamburgerButton = document.querySelector('.hamburger-menu');
+    const navLinksList = document.getElementById('nav-links-list');
+
+    console.log('Selected hamburgerButton:', hamburgerButton);
+    console.log('Selected navLinksList:', navLinksList);
+
+    if (logoElement) {
+      console.log('Logo element found. Attaching click listener.');
+      logoElement.addEventListener('click', () => {
+        logoElement.classList.remove('bounce');
+        void logoElement.offsetWidth; 
+        logoElement.classList.add('bounce');
+      });
+      logoElement.addEventListener('animationend', () => {
+        logoElement.classList.remove('bounce');
+      });
+    } else {
+      console.error('Logo element #navbar-logo not found!');
+    }
+
+    if (hamburgerButton && navLinksList) {
+      console.log('Hamburger button and nav links list found. Attaching click listener to hamburger.');
+      hamburgerButton.addEventListener('click', () => {
+        console.log('Hamburger clicked!'); 
+        
+        const isExpanded = navLinksList.classList.toggle('nav-active');
+        console.log('navLinksList class "nav-active" toggled. Is now expanded:', isExpanded);
+        
+        hamburgerButton.classList.toggle('active');
+        console.log('hamburgerButton class "active" toggled.');
+        
+        hamburgerButton.setAttribute('aria-expanded', String(isExpanded));
+        console.log('hamburgerButton aria-expanded set to:', String(isExpanded));
+        
+        if (isExpanded) {
+          console.log('Menu is expanded. Attaching click listeners to nav links to close menu.');
+          const links = navLinksList.querySelectorAll('a');
+          links.forEach(link => {
+            const closeMenuOnLinkClick = () => {
+              console.log('Nav link clicked, closing menu.');
+              navLinksList.classList.remove('nav-active');
+              hamburgerButton.classList.remove('active');
+              hamburgerButton.setAttribute('aria-expanded', 'false');
+            };
+            link.addEventListener('click', closeMenuOnLinkClick, { once: true });
+          });
+        }
+      });
+    } else {
+      if (!hamburgerButton) {
+        console.error('Hamburger button .hamburger-menu not found!');
+      }
+      if (!navLinksList) {
+        console.error('Nav links list #nav-links-list not found!');
+      }
+    }
+
+    function updateActiveNavLink() {
+      const currentPath = window.location.pathname + window.location.hash;
+      const navLinkElements = document.querySelectorAll('.nav-links a');
+      
+      navLinkElements.forEach(link => {
+        const linkHref = link.getAttribute('href');
+        // For same-page hash links (e.g., #vitrine), ensure they are correctly matched
+        // when the pathname is / and hash is present.
+        let normalizedLinkHref = linkHref;
+        if (linkHref.startsWith('#') && currentPath.startsWith('/')) {
+           // Prepend current pathname if it's just a hash, to match against currentPath
+           // Or, more simply, if linkHref is just a hash, compare it with window.location.hash
+        }
+
+
+        const normalizedCurrentPath = currentPath.endsWith('/') && currentPath.length > 1 ? currentPath.slice(0, -1) : currentPath;
+        normalizedLinkHref = linkHref.endsWith('/') && linkHref.length > 1 ? linkHref.slice(0, -1) : linkHref;
+        
+        // Handle matching for root path and hash links correctly
+        let isActive = false;
+        if (linkHref.startsWith('#')) { // For links like #vitrine
+            isActive = window.location.hash === linkHref && (normalizedCurrentPath === '/' || normalizedCurrentPath === '' || normalizedCurrentPath === '/index.html');
+        } else { // For links like /#services or /
+            isActive = normalizedLinkHref === normalizedCurrentPath || 
+                       (normalizedLinkHref === "/" && (normalizedCurrentPath === "/index.html" || normalizedCurrentPath === ""));
+        }
+
+
+        if (isActive) {
+          link.classList.add('active');
+        } else {
+          link.classList.remove('active');
+        }
+      });
+    }
+    
+    console.log('Calling updateActiveNavLink initially.');
+    updateActiveNavLink();
+    window.addEventListener('hashchange', () => {
+      console.log('hashchange event detected. Calling updateActiveNavLink.');
+      updateActiveNavLink();
+    });
+    console.log('Navbar script initialization complete.');
+  }
+
+  // Astro specific: Use astro:page-load for subsequent page navigations
+  // but also ensure it runs on initial load if DOMContentLoaded fires first or if astro:page-load is more reliable for Astro's lifecycle.
+  if (document.readyState === 'loading') {
+    // Loading hasn't finished yet
+    document.addEventListener('DOMContentLoaded', initializeNavbar);
+  } else {
+    // `DOMContentLoaded` has already fired
+    console.log('DOMContentLoaded already fired, calling initializeNavbar directly.');
+    initializeNavbar();
+  }
+  
+  // Also listen for Astro's page load event for client-side navigation
+  document.addEventListener('astro:page-load', () => {
+    console.log('astro:page-load event fired in Navbar.astro, re-initializing.');
+    initializeNavbar();
+  });
+
+</script>

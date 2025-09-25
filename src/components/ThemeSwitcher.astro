@@ -1,0 +1,192 @@
+---
+// src/components/ThemeSwitcher.astro
+---
+<button id="theme-toggle" class="theme-switch" aria-label="Changer de thème" title="Changer de thème" aria-live="polite">
+  <span class="switch-knob">
+    <svg class="sun-icon" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24">
+      <circle cx="12" cy="12" r="6"/>
+    </svg>
+    <svg class="moon-icon" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24" style="display:none;">
+      <path d="M12 2a10 10 0 100 20 10 10 0 000-20zm0 1.5a8.5 8.5 0 110 17 8.5 8.5 0 010-17zM12 4.042A8 8 0 0012 20a8 8 0 000-15.958z"/>
+      <path d="M12 4a8 8 0 00-3.91 14.85A10.005 10.005 0 0112 2c2.61 0 4.98.99 6.76 2.6A8.003 8.003 0 0012 4z"/>
+    </svg>
+  </span>
+  <span class="visually-hidden" id="theme-status">Thème clair activé</span>
+</button>
+
+<style>
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+
+  .theme-switch {
+    /* Material Design inspired dimensions */
+    --switch-width: 40px;
+    --switch-height: 24px; /* Overall height, also track height */
+    --knob-size: 18px;    /* Knob diameter */
+    --knob-padding: 3px;  /* Padding within track, (track_height - 2*padding) = knob_size */
+    --knob-travel-distance: calc(var(--switch-width) - var(--knob-size) - (2 * var(--knob-padding)));
+
+    /* Light Mode - Track color */
+    background-color: #BDBDBD; /* Material Grey 400 - This is for LIGHT THEME */
+    border: none;
+    cursor: pointer;
+    padding: var(--knob-padding);
+    border-radius: var(--switch-height); /* Pill shape */
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start;
+    width: var(--switch-width);
+    height: var(--switch-height);
+    position: relative;
+    box-sizing: border-box;
+    transition: background-color 0.3s ease;
+  }
+
+  /* Track styling when page is in Dark Mode, and switch is set to Light (Sun icon) */
+  html.dark .theme-switch:not(.dark-active) {
+    background-color: #8e8e8e; /* MODIFIED: Light Grey 300 for dark theme track */
+  }
+
+  /* Default track styling when switch is Active (Dark Mode selected on switch) */
+  /* This would apply if, for example, the page was light but switch was forced dark */
+  .theme-switch.dark-active {
+    background-color: var(--accent-light); /* Original accent color for the track */
+  }
+  
+  /* Track styling when page is in Dark Mode AND switch is Active (Dark Mode selected on switch) */
+  html.dark .theme-switch.dark-active {
+    background-color: #8e8e8e; /* ADDED/MODIFIED: Light Grey 300 for dark theme track */
+  }
+
+  .switch-knob {
+    /* Light Mode - Inactive Knob (Sun icon visible) */
+    background-color: #FFFFFF; /* White knob */
+    color: #757575; /* Darker grey for sun icon */
+    width: var(--knob-size);
+    height: var(--knob-size);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2), 0 1px 2px rgba(0,0,0,0.14), 0 2px 1px -1px rgba(0,0,0,0.12); /* Material elevation */
+    transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), background-color 0.3s ease, color 0.3s ease;
+  }
+
+  /* Knob styling when switch is Active (Dark Mode selected on switch) */
+  .theme-switch.dark-active .switch-knob {
+    transform: translateX(var(--knob-travel-distance));
+    background-color: #FFFFFF; /* White knob for high contrast */
+    color: var(--accent-light); /* Icon color (moon) remains accent-light. User did not request change here. */
+  }
+
+  /* Knob styling when page is in Dark Mode, but switch is set to Light (Sun icon) */
+  html.dark .theme-switch:not(.dark-active) .switch-knob {
+    background-color: #E0E0E0; /* Light Grey 300 for knob on dark inactive track */
+    color: #424242; /* Darker icon color for contrast */
+  }
+
+
+  .switch-knob .sun-icon,
+  .switch-knob .moon-icon {
+    width: calc(var(--knob-size) * 0.65); /* Slightly smaller icon relative to knob */
+    height: calc(var(--knob-size) * 0.65);
+  }
+
+  /* Icon visibility logic */
+  html:not(.dark) .theme-switch .moon-icon { display: none; }
+  html:not(.dark) .theme-switch .sun-icon { display: block; }
+  html.dark .theme-switch .sun-icon { display: none; }
+  html.dark .theme-switch .moon-icon { display: block; }
+
+</style>
+
+<script>
+  // src/components/ThemeSwitcher.astro script
+  console.log('[ThemeSwitcher] Script loaded.');
+
+  function setupThemeToggle() {
+    console.log('[ThemeSwitcher] setupThemeToggle CALLED.');
+    const themeToggleButton = document.getElementById('theme-toggle');
+    const themeStatusElement = document.getElementById('theme-status');
+    
+    if (!themeToggleButton) {
+      console.error('[ThemeSwitcher] CRITICAL: Theme toggle button (#theme-toggle) NOT FOUND in the DOM when setupThemeToggle was called.');
+      return;
+    }
+    console.log('[ThemeSwitcher] Theme toggle button FOUND:', themeToggleButton);
+
+    if (themeToggleButton.dataset.themeListenersAttached === 'true') {
+      console.log('[ThemeSwitcher] Listeners already attached to this button instance. Re-validating state.');
+      const isDarkCurrent = document.documentElement.classList.contains('dark');
+      _updateSwitchState(isDarkCurrent, themeToggleButton, themeStatusElement);
+      return; 
+    }
+
+    const sunIcon = themeToggleButton.querySelector('.sun-icon');
+    const moonIcon = themeToggleButton.querySelector('.moon-icon');
+
+    if (!sunIcon) console.error('[ThemeSwitcher] Sun icon (.sun-icon) NOT FOUND within the button.');
+    if (!moonIcon) console.error('[ThemeSwitcher] Moon icon (.moon-icon) NOT FOUND within the button.');
+    if (!themeStatusElement) console.error('[ThemeSwitcher] Theme status element (#theme-status) NOT FOUND.');
+    if (!sunIcon || !moonIcon || !themeStatusElement) return;
+    
+    console.log('[ThemeSwitcher] Icons and status element FOUND.');
+
+    function _updateSwitchState(isDark, button, statusEl) {
+      console.log(`[ThemeSwitcher] _updateSwitchState called. Target theme isDark: ${isDark}`);
+      // CSS now handles icon visibility based on html.dark and button.dark-active
+      // We only need to toggle the .dark-active class on the button
+      // and update aria attributes / status text.
+
+      // Update icon visibility directly for initial state and JS-driven changes
+      // This ensures icons switch even if CSS takes a moment or for non-CSS scenarios.
+      sunIcon.style.display = isDark ? 'none' : 'block';
+      moonIcon.style.display = isDark ? 'block' : 'none';
+      
+      if (isDark) {
+        button.classList.add('dark-active');
+        statusEl.textContent = 'Thème sombre activé';
+      } else {
+        button.classList.remove('dark-active');
+        statusEl.textContent = 'Thème clair activé';
+      }
+      console.log(`[ThemeSwitcher] Switch state updated. Button classList: ${button.classList}, Status: ${statusEl.textContent}`);
+    }
+
+    const initialIsDark = document.documentElement.classList.contains('dark');
+    console.log(`[ThemeSwitcher] Initial theme check from classList: document.documentElement isDark = ${initialIsDark}`);
+    _updateSwitchState(initialIsDark, themeToggleButton, themeStatusElement);
+
+    themeToggleButton.addEventListener('click', () => {
+      console.log('[ThemeSwitcher] Button CLICKED.');
+      const isDarkNow = document.documentElement.classList.toggle('dark');
+      localStorage.setItem('theme', isDarkNow ? 'dark' : 'light');
+      console.log(`[ThemeSwitcher] Theme toggled. New theme isDark: ${isDarkNow}. Stored in localStorage: ${localStorage.getItem('theme')}`);
+      _updateSwitchState(isDarkNow, themeToggleButton, themeStatusElement);
+    });
+    
+    themeToggleButton.dataset.themeListenersAttached = 'true';
+    console.log('[ThemeSwitcher] Click listener ATTACHED and button marked (data-theme-listeners-attached="true").');
+  }
+
+  document.addEventListener('astro:page-load', () => {
+    console.log('[ThemeSwitcher] astro:page-load event FIRED. Calling setupThemeToggle.');
+    setupThemeToggle();
+  });
+  
+  document.addEventListener('DOMContentLoaded', () => {
+    console.log('[ThemeSwitcher] DOMContentLoaded event FIRED. Calling setupThemeToggle.');
+    setupThemeToggle();
+  });
+  
+  console.log('[ThemeSwitcher] Event listeners (astro:page-load, DOMContentLoaded) REGISTERED.');
+</script>

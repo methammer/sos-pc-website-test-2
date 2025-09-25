@@ -1,0 +1,1064 @@
+---
+import Layout from '../layouts/Layout.astro';
+// Import Swiper styles
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination';
+import 'swiper/css/effect-coverflow';
+
+// JS Imports moved to the client-side script below
+
+const apiKey = import.meta.env.ABSTRACT_API_KEY;
+
+const portfolioItemsConfig = [
+  {
+    id: "Artisan",
+    name: "Site Vitrine pour Artisan",
+    description: "Création d'un site web moderne et responsive pour un artisan local, mettant en valeur ses services et réalisations. Ce projet inclut une galerie d'images, un formulaire de contact et une optimisation pour les moteurs de recherche.",
+    liveUrl: "https://boutique-artisan.netlify.app",
+    placeholderImg: "https://via.placeholder.com/400x250.png?text=Site+Artisan",
+    altText: "Aperçu Site Artisan",
+    localFallbackImg: "/Portfolio preview/boutique-artisan.png"
+  },
+  {
+    id: "Restaurant",
+    name: "Site Web pour Restaurant",
+    description: "Développement d'un site avec menu en ligne interactif, système de réservation de table, galerie photos des plats et de l'établissement, et intégration des avis clients.",
+    liveUrl: "#", 
+    placeholderImg: "https://via.placeholder.com/400x250.png?text=Site+Restaurant",
+    altText: "Aperçu Site Restaurant"
+  },
+  {
+    id: "GiteProvence",
+    name: "Site de Location de Gîte",
+    description: "Développement d'un site attractif pour la location d'un gîte en Provence, avec galerie photos, calendrier de disponibilités, formulaire de réservation et informations touristiques locales.",
+    liveUrl: "https://gite-provence.netlify.app/",
+    placeholderImg: "https://via.placeholder.com/400x250.png?text=Site+Gîte+Provence",
+    altText: "Aperçu Site Gîte Provence",
+    localFallbackImg: "/Portfolio preview/gite-provence.png" // Added local fallback
+  },
+  {
+    id: "BoltDIY2",
+    name: "Projet Bolt DIY 2",
+    description: "Un exemple de site web interactif et dynamique créé avec les outils Bolt, démontrant diverses fonctionnalités et une intégration fluide de composants.",
+    liveUrl: "https://bolt-diy-2-1746478852874.netlify.app/",
+    placeholderImg: "https://via.placeholder.com/400x250.png?text=Aperçu+Bolt+DIY+2",
+    altText: "Aperçu Projet Bolt DIY 2"
+  }
+];
+
+let portfolioPreviews = {};
+
+if (apiKey) {
+  console.log("AbstractAPI key found. Fetching screenshots...");
+  const fetchPromises = portfolioItemsConfig.map(async (item) => {
+    if (item.liveUrl && item.liveUrl !== "#" && !item.liveUrl.startsWith('https://via.placeholder.com')) {
+      try {
+        const apiUrl = `https://screenshot.abstractapi.com/v1/?api_key=${apiKey}&url=${encodeURIComponent(item.liveUrl)}&json=true&width=400&height=250&capture_full_page=false&delay=2`;
+        const response = await fetch(apiUrl);
+        if (!response.ok) {
+          const errorBody = await response.text();
+          console.error(`AbstractAPI error for ${item.liveUrl} [${response.status}]: ${errorBody.substring(0, 300)}`);
+          return { id: item.id, url: item.localFallbackImg || item.placeholderImg }; 
+        }
+        const data = await response.json();
+        if (data.url) {
+          console.log(`Screenshot fetched for ${item.liveUrl}: ${data.url}`);
+          return { id: item.id, url: data.url };
+        } else {
+          console.warn(`AbstractAPI did not return a URL for ${item.liveUrl}. Response:`, JSON.stringify(data).substring(0, 300));
+          return { id: item.id, url: item.localFallbackImg || item.placeholderImg }; 
+        }
+      } catch (error) {
+        console.error(`Failed to fetch screenshot for ${item.liveUrl}:`, error);
+        return { id: item.id, url: item.localFallbackImg || item.placeholderImg }; 
+      }
+    }
+    return { id: item.id, url: item.localFallbackImg || item.placeholderImg };
+  });
+
+  const results = await Promise.all(fetchPromises);
+  results.forEach(result => {
+    portfolioPreviews[result.id] = result.url;
+  });
+} else {
+  console.warn("ABSTRACT_API_KEY not found in .env. Using placeholder or local fallback images for portfolio.");
+  portfolioItemsConfig.forEach(item => {
+    portfolioPreviews[item.id] = item.localFallbackImg || item.placeholderImg;
+  });
+}
+---
+
+<Layout title="Accueil">
+	<h1>SOS-PC</h1>
+	<p class="tagline">Votre partenaire pour des solutions informatiques et web personnalisées.</p>
+
+	<section id="about">
+		<h2>À Propos de SOS-PC</h2>
+		<p>
+			SOS-PC, dirigé par un auto-entrepreneur passionné, propose une gamme complète de services pour répondre à vos besoins technologiques. Notre objectif est d'offrir des solutions fiables, performantes et adaptées, que ce soit pour les particuliers ou les professionnels.
+		</p>
+	</section>
+
+	<section id="services" class="cta-section">
+		<h2>Découvrez Nos Solutions</h2>
+		<p class="services-intro">Que vous ayez besoin d'une réparation, d'un nouveau site web ou d'une solution d'hébergement spécifique, nous avons l'expertise qu'il vous faut.</p>
+
+		<div class="service-cards">
+			<article class="service-card">
+				<div class="service-card-image-container service-card-image-container--with-gradient">
+          <div id="lottie-pc-repair" class="service-card-lottie"></div>
+				</div>
+				<h3><i class="icon-repair"></i> Réparation Informatique</h3>
+				<p>
+					Dépannage, montage sur mesure, optimisation. Nous redonnons vie à votre matériel.
+				</p>
+				<ul>
+					<li>Diagnostic et dépannage</li>
+					<li>Remplacement de composants</li>
+					<li>Montage PC personnalisé</li>
+					<li>Optimisation & Récupération</li>
+				</ul>
+				<a href="#contact" class="cta-button">Demander un devis</a>
+			</article>
+
+			<article class="service-card">
+				<div class="service-card-image-container service-card-image-container--with-gradient">
+          <div id="lottie-web-design" class="service-card-lottie"></div>
+				</div>
+				<h3><i class="icon-web"></i> Création de Sites Web</h3>
+				<p>
+					Sites vitrines modernes, responsives et optimisés pour votre présence en ligne.
+				</p>
+				<ul>
+					<li>Sites vitrines pro</li>
+					<li>Design responsive</li>
+					<li>SEO de base inclus</li>
+					<li>Fonctionnalités sur mesure</li>
+				</ul>
+				<a href="#contact" class="cta-button">Discutons de votre projet</a>
+			</article>
+
+			<article class="service-card">
+				<div class="service-card-image-container service-card-image-container--with-gradient">
+					<div id="lottie-streaming" class="service-card-lottie"></div>
+				</div>
+				<h3><i class="icon-stream"></i> Hébergement Streaming</h3>
+				<p>
+					Votre propre plateforme média (Jellyfin, etc.) accessible partout, en toute sécurité.
+				</p>
+				<ul>
+					<li>Installation Jellyfin/similaires</li>
+					<li>Conseils matériel/serveur</li>
+					<li>Accès sécurisé</li>
+					<li>Maintenance de base</li>
+				</ul>
+				<a href="#contact" class="cta-button">En savoir plus</a>
+			</article>
+
+			<article class="service-card service-card--coming-soon">
+				<div class="coming-soon-banner">Prochainement</div>
+				<div class="service-card-image-container service-card-image-container--with-gradient">
+					<img src="https://via.placeholder.com/300x150.png?text=Modèle+IA" alt="Hébergement Modèles IA" class="service-card-image">
+				</div>
+				<h3><i class="icon-ai"></i> Hébergement Modèles IA</h3>
+				<p>
+					Déployez et gérez vos modèles d'IA pour explorer leur potentiel. (Service en développement).
+				</p>
+				<ul>
+					<li>Conseils hébergement</li>
+					<li>Aide au déploiement</li>
+					<li>Gestion infrastructure</li>
+					<li>Contactez-nous pour discuter</li>
+				</ul>
+				<a href="#contact" class="cta-button">Contactez-nous</a>
+			</article>
+		</div>
+	</section>
+
+	<section id="location" class="map-section">
+		<h2>Notre Zone d'Intervention Principale</h2>
+		<p>Basé près de 04700 Le Castellet, nous intervenons dans les environs.</p>
+		<div class="map-container">
+			<iframe
+				src="https://maps.google.com/maps?q=Le%20Castellet%2C%2004700&hl=fr&z=13&output=embed"
+				width="100%"
+				height="350"
+				style="border:0; border-radius: 8px;"
+				allowfullscreen=""
+				loading="lazy"
+				referrerpolicy="no-referrer-when-downgrade"
+				title="Carte de localisation SOS-PC - Le Castellet, 04700">
+			</iframe>
+			<br/>
+			<small>
+				<a href="https://maps.google.com/?q=Le+Castellet%2C+04700" target="_blank">Voir Le Castellet, 04700 sur Google Maps</a>
+			</small>
+		</div>
+	</section>
+
+	<section id="vitrine">
+		<h2>Notre Vitrine Web</h2>
+		<p class="vitrine-intro">Quelques exemples de sites web que nous avons réalisés.</p>
+
+		<div class="swiper vitrine-swiper">
+			<div class="swiper-wrapper">
+        {portfolioItemsConfig.map(item => (
+          <div class="swiper-slide">
+            <article class="vitrine-item">
+              <img 
+                src={portfolioPreviews[item.id] || item.placeholderImg} 
+                alt={item.altText} 
+                class="vitrine-image"
+                loading="lazy"
+              />
+              <div class="vitrine-content">
+                <h3>{item.name}</h3>
+                <p>{item.description}</p>
+                <a 
+                  href={item.liveUrl === "#" ? "#" : item.liveUrl} 
+                  target={item.liveUrl === "#" ? "_self" : "_blank"} 
+                  rel="noopener noreferrer" 
+                  class:list={["vitrine-link", { "disabled-link": item.liveUrl === "#" }]}
+                >
+                  Voir le site
+                </a>
+              </div>
+            </article>
+          </div>
+        ))}
+			</div>
+			<div class="swiper-pagination"></div>
+			<div class="swiper-button-prev"></div>
+			<div class="swiper-button-next"></div>
+		</div>
+	</section>
+
+	<section id="contact">
+		<h2>Contactez-nous</h2>
+		<p>
+			Pour toute demande d'information ou devis, n'hésitez pas à remplir le formulaire ci-dessous ou à nous contacter directement via les options ci-dessous. Nous serons ravis de discuter de votre projet.
+		</p>
+
+		<form class="contact-form" name="contact" method="POST" data-netlify="true" data-netlify-honeypot="bot-field">
+      {/* Hidden fields for Netlify Forms enhancement */}
+      <input type="hidden" name="form-name" value="contact" />
+      <input type="hidden" name="subject" value="[SOS-PC Contact] Nouveau message de %{name} - Sujet: %{contact_subject}" />
+      <input type="hidden" name="replyto" value="%{email}" />
+
+      {/* Honeypot field for spam prevention, should be hidden with CSS or style attribute */}
+      <p style="display:none;">
+        <label>
+          Ne pas remplir si vous êtes humain : <input name="bot-field" />
+        </label>
+      </p>
+      
+      {/* Visible form fields */}
+      <div class="form-group">
+          <label for="name">Nom :</label>
+          <input type="text" id="name" name="name" required />
+      </div>
+      <div class="form-group">
+          <label for="email">Email :</label>
+          <input type="email" id="email" name="email" required />
+      </div>
+      <div class="form-group">
+          <label for="contact_subject">Sujet :</label> {/* id and name changed */}
+          <input type="text" id="contact_subject" name="contact_subject" required /> {/* id and name changed */}
+      </div>
+      <div class="form-group">
+          <label for="message">Message :</label>
+          <textarea id="message" name="message" rows="5" required></textarea>
+      </div>
+      <button type="submit" class="submit-button">Envoyer le Message</button>
+    </form>
+
+		<div class="contact-buttons">
+			<p>Ou contactez-nous directement :</p>
+			<a href="tel:+33XXXXXXXXX" class="contact-button phone" aria-label="Nous appeler par téléphone">
+				<span class="icon" aria-hidden="true">📞</span>
+				<span class="text">Téléphone</span>
+			</a>
+			<a href="https://discord.gg/APFtmK5PYc" target="_blank" rel="noopener noreferrer" class="contact-button discord" aria-label="Rejoindre notre serveur Discord">
+				<span class="icon" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="100" height="100" viewBox="0,0,256,256">
+            <g fill="white" fill-rule="nonzero" stroke="none" stroke-width="1" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="10" stroke-dasharray="" stroke-dashoffset="0" font-family="none" font-weight="none" font-size="none" text-anchor="none" style="mix-blend-mode: normal"><g transform="scale(5.33333,5.33333)"><path d="M40,12c0,0 -4.585,-3.588 -10,-4l-0.488,0.976c4.896,1.198 7.142,2.915 9.488,5.024c-4.045,-2.065 -8.039,-4 -15,-4c-6.961,0 -10.955,1.935 -15,4c2.346,-2.109 5.018,-4.015 9.488,-5.024l-0.488,-0.976c-5.681,0.537 -10,4 -10,4c0,0 -5.121,7.425 -6,22c5.162,5.953 13,6 13,6l1.639,-2.185c-2.782,-0.967 -5.924,-2.694 -8.639,-5.815c3.238,2.45 8.125,5 16,5c7.875,0 12.762,-2.55 16,-5c-2.715,3.121 -5.857,4.848 -8.639,5.815l1.639,2.185c0,0 7.838,-0.047 13,-6c-0.879,-14.575 -6,-22 -6,-22zM17.5,30c-1.933,0 -3.5,-1.791 -3.5,-4c0,-2.209 1.567,-4 3.5,-4c1.933,0 3.5,1.791 3.5,4c0,2.209 -1.567,4 -3.5,4zM30.5,30c-1.933,0 -3.5,-1.791 -3.5,-4c0,-2.209 1.567,-4 3.5,-4c1.933,0 3.5,1.791 3.5,4c0,2.209 -1.567,4 -3.5,4z"></path></g></g>
+          </svg>
+        </span>
+				<span class="text">Discord</span>
+			</a>
+			<a href="https://t.me/YOUR_USERNAME" target="_blank" rel="noopener noreferrer" class="contact-button telegram" aria-label="Nous contacter sur Telegram">
+				<span class="icon" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="100" height="100" viewBox="0 0 48 48" style="fill:currentColor;">
+            <path fill="#29b6f6" d="M24 4A20 20 0 1 0 24 44A20 20 0 1 0 24 4Z"></path><path fill="#fff" d="M33.95,15l-3.746,19.126c0,0-0.161,0.874-1.245,0.874c-0.576,0-0.873-0.274-0.873-0.274l-8.114-6.733 l-3.97-2.001l-5.095-1.355c0,0-0.907-0.262-0.907-1.012c0-0.625,0.933-0.923,0.933-0.923l21.316-8.468 c-0.001-0.001,0.651-0.235,1.126-0.234C33.667,14,34,14.125,34,14.5C34,14.75,33.95,15,33.95,15z"></path><path fill="#b0bec5" d="M23,30.505l-3.426,3.374c0,0-0.149,0.115-0.348,0.12c-0.069,0.002-0.143-0.009-0.219-0.043 l0.964-5.965L23,30.505z"></path><path fill="#cfd8dc" d="M29.897,18.196c-0.169-0.22-0.481-0.26-0.701-0.093L16,26c0,0,2.106,5.892,2.427,6.912 c0.322,1.021,0.58,1.045,0.58,1.045l0.964-5.965l9.832-9.096C30.023,18.729,30.064,18.416,29.897,18.196z"></path>
+          </svg>
+        </span>
+				<span class="text">Telegram</span>
+			</a>
+		</div>
+	</section>
+
+</Layout>
+
+<script>
+  import Swiper from 'swiper';
+  import { Navigation, Pagination, EffectCoverflow } from 'swiper/modules';
+  import lottie from 'lottie-web';
+
+  document.addEventListener('DOMContentLoaded', () => {
+    // Swiper initialization
+    const swiper = new Swiper('.vitrine-swiper', {
+      modules: [Navigation, Pagination, EffectCoverflow],
+      effect: 'coverflow',
+      grabCursor: true,
+      centeredSlides: true,
+      loop: true,
+      slidesPerView: 'auto',
+      autoHeight: true, 
+      coverflowEffect: {
+        rotate: 50,
+        stretch: 0,
+        depth: 100,
+        modifier: 1,
+        slideShadows: true,
+      },
+      pagination: {
+        el: '.swiper-pagination',
+        clickable: true,
+      },
+      navigation: {
+        nextEl: '.swiper-button-next',
+        prevEl: '.swiper-button-prev',
+      },
+    });
+
+    // Lottie animation for Web Design card
+    const lottieWebDesignContainer = document.getElementById('lottie-web-design');
+    if (lottieWebDesignContainer) {
+      lottie.loadAnimation({
+        container: lottieWebDesignContainer,
+        renderer: 'svg',
+        loop: true,
+        autoplay: true,
+        path: '/web-design/animations/43f834cb-31ab-428c-acf2-2674d3b07d94.json'
+      });
+    }
+
+    // Lottie animation for PC Repair card
+    const lottiePcRepairContainer = document.getElementById('lottie-pc-repair');
+    if (lottiePcRepairContainer) {
+      lottie.loadAnimation({
+        container: lottiePcRepairContainer,
+        renderer: 'svg',
+        loop: true,
+        autoplay: true,
+        path: '/PC-repair/animations/8acfa0f0-493f-445c-a1a3-ae798829ce77.json'
+      });
+    }
+
+    // Lottie animation for Streaming card
+    const lottieStreamingContainer = document.getElementById('lottie-streaming');
+    if (lottieStreamingContainer) {
+      lottie.loadAnimation({
+        container: lottieStreamingContainer,
+        renderer: 'svg',
+        loop: true,
+        autoplay: true,
+        path: '/Streaming/animations/3add7b2a-2592-4274-a7f6-614fcd7bfe31.json'
+      });
+    }
+  });
+</script>
+
+
+<style>
+	.tagline {
+		text-align: center;
+		font-style: italic;
+		color: var(--text-color); /* Use CSS variable */
+		opacity: 0.8;
+		margin-bottom: 3rem;
+		transition: color 0.3s ease;
+	}
+
+	section {
+		margin-bottom: 3rem;
+		padding: 2rem;
+		border-bottom: none;
+		position: relative;
+		/* background-color: transparent; Removed, main has bg now */
+		border-radius: 8px;
+		/* Removed transition for hover effects */
+		/* transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease; */
+	}
+
+	section:not(:last-of-type)::after {
+		content: '';
+		position: absolute;
+		bottom: -1.5rem;
+		left: 50%;
+		transform: translateX(-50%);
+		width: 80%;
+		max-width: 500px;
+		height: 2px;
+		background: linear-gradient(to right, transparent, var(--section-separator-color), transparent); /* Use CSS variable */
+		opacity: 0.5;
+		transition: opacity 0.3s ease, background 0.3s ease;
+	}
+
+	.section-image {
+		display: block;
+		max-width: 100%;
+		height: auto;
+		margin: 1.5rem auto;
+		border-radius: 8px;
+		opacity: 0.9;
+	}
+
+	.cta-section h2 {
+		text-align: center;
+		margin-bottom: 1rem;
+	}
+	.services-intro {
+		text-align: center;
+		color: var(--text-color); /* Use CSS variable */
+		opacity: 0.9;
+		margin-bottom: 2.5rem;
+		max-width: 60ch;
+		margin-left: auto;
+		margin-right: auto;
+		transition: color 0.3s ease;
+	}
+	.service-cards {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+		gap: 1.5rem;
+	}
+	.service-card {
+		background-color: var(--card-bg-color); /* Use CSS variable */
+		padding: 0;
+		border-radius: 8px;
+		display: flex;
+		flex-direction: column;
+		transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, background-color 0.3s ease;
+		overflow: hidden;
+		border: 1px solid var(--border-color); /* Add subtle border */
+		position: relative; /* Needed for the banner positioning */
+	}
+
+	.service-card:hover {
+		transform: translateY(-5px);
+		box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
+	}
+
+	.service-card--coming-soon .service-card-image-container,
+	.service-card--coming-soon h3,
+	.service-card--coming-soon p,
+	.service-card--coming-soon ul,
+	.service-card--coming-soon .cta-button {
+		opacity: 0.5; /* Dim the content of the coming soon card */
+		pointer-events: none; /* Disable interactions with dimmed content */
+	}
+
+	.service-card--coming-soon .cta-button {
+		background-color: var(--disabled-button-bg-color, #6c757d); /* Greyed out button */
+		cursor: not-allowed;
+	}
+
+
+	.coming-soon-banner {
+		position: absolute;
+		top: 500px !important;   /* User-set value, maintained */
+		left: -100px !important;  /* Adjusted for new length */
+		background-color: rgb(var(--accent)); /* Purple theme */
+		color: white;
+		padding: 10px 250px;     /* Increased padding for length */
+		font-size: 0.9rem;
+		font-weight: bold;
+		text-align: center;
+		transform: rotate(-45deg);
+		transform-origin: top left;
+		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+		z-index: 10;
+		white-space: nowrap;
+		letter-spacing: 0.5px;
+	}
+
+
+	.service-card-image-container {
+		position: relative;
+	}
+
+	.service-card-image {
+		width: 100%;
+		height: 150px; /* Default height for card images */
+		object-fit: cover;
+		display: block;
+	}
+
+  .service-card-lottie {
+    width: 100%;
+    height: 180px; /* Match the GIF card image height or adjust as needed */
+    display: block;
+  }
+
+	/* Specific styles for the GIF card image to make it taller */
+	.service-card-image-container--with-gradient .service-card-image,
+  .service-card-image-container--with-gradient .service-card-lottie {
+		height: 180px; /* Increased height for the GIF/Lottie */
+	}
+
+	/* Gradient overlay for the GIF card image */
+	.service-card-image-container--with-gradient::after {
+		content: '';
+		position: absolute;
+		bottom: 0;
+		left: 0;
+		width: 100%;
+		height: 70%; /* Gradient covers the bottom 70% of the image height */
+		background: linear-gradient(
+			to bottom,
+			transparent 0%, /* Starts transparent at the top of this pseudo-element */
+			var(--card-bg-color) 100% /* Fades to card background color at the bottom */
+		);
+		pointer-events: none; /* Allows clicks to pass through if needed */
+	}
+
+	.service-card h3 {
+		display: flex;
+		align-items: center;
+		gap: 0.7rem;
+		margin-top: 0; /* Reset margin if image container is used */
+		color: var(--heading-color); /* Use CSS variable */
+		padding: 1rem 1.5rem 0 1.5rem;
+		z-index: 1; /* Ensure text is above gradient if it overlaps slightly */
+    position: relative; /* For z-index to work */
+	}
+	.service-card p {
+		flex-grow: 1;
+		margin-bottom: 1rem;
+		color: var(--card-text-color); /* Use CSS variable */
+		padding: 0 1.5rem;
+		transition: color 0.3s ease;
+		z-index: 1;
+    position: relative;
+	}
+	.service-card ul {
+		font-size: 0.9em;
+		margin-bottom: 1.5rem;
+		padding: 0 1.5rem 0 2.7rem;
+		flex-grow: 1;
+		color: var(--card-text-color); /* Use CSS variable */
+		transition: color 0.3s ease;
+		z-index: 1;
+    position: relative;
+	}
+	.service-card li {
+		margin-bottom: 0.4rem;
+	}
+	.cta-button {
+		display: block;
+		background-color: var(--button-bg-color); /* Use CSS variable */
+		color: var(--button-text-color); /* Use CSS variable */
+		padding: 0.7rem 1.2rem;
+		border-radius: 5px;
+		text-decoration: none;
+		text-align: center;
+		font-weight: bold;
+		transition: background-color 0.2s ease, color 0.3s ease;
+		margin: 1.5rem; /* Keep margin consistent */
+		z-index: 1;
+    position: relative;
+	}
+	.cta-button:hover {
+		background-color: var(--button-hover-bg-color); /* Use CSS variable */
+	}
+
+	.icon-repair::before,
+	.icon-web::before,
+	.icon-stream::before,
+	.icon-ai::before {
+		content: '⚙️';
+		display: inline-block;
+		font-size: 1.5em;
+		color: var(--link-color); /* Use link color for icons, or a specific icon color variable */
+		transition: color 0.3s ease;
+	}
+	.icon-web::before { content: '🌐'; }
+	.icon-stream::before { content: '🎬'; }
+	.icon-ai::before { content: '🧠'; }
+
+	.map-section h2,
+	.map-section p:first-of-type {
+		text-align: center;
+	}
+	.map-container {
+		margin-top: 1.5rem;
+		text-align: center;
+	}
+	.map-container iframe {
+		max-width: 100%;
+		opacity: 0.95; 
+		border-radius: 8px;
+		border: 1px solid var(--border-color);
+		transition: opacity 0.3s ease, border-color 0.3s ease; 
+	}
+
+	.map-container small {
+		display: block;
+		margin-top: 0.5rem;
+		font-size: 0.85em;
+		color: var(--text-color);
+		opacity: 0.7;
+		transition: color 0.3s ease;
+	}
+	.map-container small a {
+		color: var(--link-color);
+		text-decoration: underline;
+	}
+	.map-container small a:hover {
+		color: var(--accent-dark);
+	}
+	html.dark .map-container small a:hover {
+		color: white;
+	}
+
+
+	#vitrine h2 {
+		text-align: center;
+		margin-bottom: 1rem;
+	}
+	.vitrine-intro {
+		text-align: center;
+		color: var(--text-color);
+		opacity: 0.9;
+		margin-bottom: 2.5rem;
+		max-width: 60ch;
+		margin-left: auto;
+		margin-right: auto;
+		transition: color 0.3s ease;
+	}
+	.vitrine-swiper {
+		width: 100%;
+		padding-top: 20px;
+		padding-bottom: 50px; /* For pagination */
+		position: relative;
+	}
+	.swiper-slide {
+		background-position: center;
+		background-size: cover;
+		width: 60%; /* Default width, overridden in media queries */
+		max-width: 400px; /* Max width for larger screens */
+		border-radius: 8px;
+		/* overflow: hidden; Swiper handles overflow for effects */
+	}
+	.swiper-slide:not(.swiper-slide-active) {
+		opacity: 0.7;
+	}
+	.swiper-slide .vitrine-item {
+		background-color: var(--card-bg-color); 
+		border-radius: 8px;
+		overflow: hidden; /* Important to clip content to card boundaries */
+		display: flex;
+		flex-direction: column;
+		width: 100%;
+		height: 100%; /* Make item fill the slide height, works with Swiper's autoHeight */
+		margin: 0 auto;
+		box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+		transition: background-color 0.3s ease; 
+		border: 1px solid var(--border-color); 
+	}
+
+	.vitrine-image {
+		width: 100%;
+		height: 200px; /* Default height */
+		object-fit: cover;
+		object-position: top; 
+		display: block;
+		border-bottom: 3px solid var(--link-color); 
+		transition: border-color 0.3s ease;
+    background-color: var(--card-bg-color); 
+	}
+	.vitrine-content {
+		padding: 1.5rem;
+		flex-grow: 1; /* Allows content to take available space */
+		display: flex;
+		flex-direction: column;
+	}
+	.vitrine-content h3 {
+		margin-top: 0;
+		color: var(--heading-color); 
+		margin-bottom: 0.75rem;
+    font-size: 1.1rem; 
+	}
+	.vitrine-content p {
+		color: var(--card-text-color); 
+		flex-grow: 1; 
+		margin-bottom: 1rem;
+		transition: color 0.3s ease;
+    font-size: 0.9rem; 
+    line-height: 1.5;
+    word-break: break-word; 
+	}
+	.vitrine-link {
+		display: inline-block;
+		background-color: transparent;
+		color: var(--link-color); 
+		padding: 0.5rem 0;
+		border-radius: 4px;
+		text-decoration: none;
+		font-weight: bold;
+		transition: color 0.2s ease, background-color 0.2s ease, border-color 0.3s ease;
+		margin-top: auto; 
+		border: 1px solid var(--link-color); 
+		text-align: center;
+		max-width: 150px; 
+	}
+	.vitrine-link:hover {
+		background-color: rgba(var(--accent), 0.2); 
+		color: var(--accent-dark);
+	}
+  .vitrine-link.disabled-link {
+    opacity: 0.5;
+    pointer-events: none;
+    background-color: var(--disabled-button-bg-color, #6c757d);
+    border-color: var(--disabled-button-bg-color, #6c757d);
+    color: var(--button-text-color);
+  }
+	html.dark .vitrine-link:hover {
+		background-color: rgba(var(--accent-light), 0.2);
+		color: white;
+	}
+  html.dark .vitrine-link.disabled-link {
+    background-color: var(--disabled-button-bg-color, #5a6268);
+    border-color: var(--disabled-button-bg-color, #5a6268);
+  }
+
+
+	.swiper-pagination-bullet {
+		background-color: var(--text-color); 
+		opacity: 0.5;
+		transition: background-color 0.3s ease;
+	}
+	.swiper-pagination-bullet-active {
+		background-color: var(--link-color); 
+		opacity: 1;
+	}
+	.swiper-button-prev,
+	.swiper-button-next {
+		color: var(--link-color); 
+		background-color: rgba(var(--card-bg-color-rgb, 35, 38, 45), 0.5); 
+		border-radius: 50%;
+		width: 40px;
+		height: 40px;
+		transition: background-color 0.2s ease, color 0.3s ease;
+		top: 50%; 
+    transform: translateY(-70%); 
+	}
+	html.light .swiper-button-prev,
+	html.light .swiper-button-next {
+		background-color: rgba(255, 255, 255, 0.5); 
+	}
+	.swiper-button-prev:hover,
+	.swiper-button-next:hover {
+		background-color: rgba(var(--card-bg-color-rgb, 35, 38, 45), 0.8);
+	}
+	html.light .swiper-button-prev:hover,
+	html.light .swiper-button-next:hover {
+		background-color: rgba(255, 255, 255, 0.8); 
+	}
+	.swiper-button-prev::after,
+	.swiper-button-next::after {
+		font-size: 1.2rem;
+		font-weight: bold;
+	}
+	.swiper-button-prev { left: 10px; }
+	.swiper-button-next { right: 10px; }
+
+
+	#contact h2 {
+		text-align: center;
+	}
+	#contact > p:first-of-type { 
+		text-align: center;
+		margin-bottom: 2rem;
+	}
+	.contact-form {
+		background-color: var(--card-bg-color); 
+		padding: 2rem;
+		border-radius: 8px;
+		max-width: 600px;
+		margin: 0 auto 2rem auto;
+		box-sizing: border-box;
+		transition: background-color 0.3s ease; 
+		border: 1px solid var(--border-color); 
+	}
+
+	.form-group {
+		margin-bottom: 1.5rem;
+	}
+	.form-group label {
+		display: block;
+		margin-bottom: 0.5rem;
+		color: var(--text-color); 
+		font-weight: bold;
+		transition: color 0.3s ease;
+	}
+	.form-group input,
+	.form-group textarea {
+		width: 100%;
+		padding: 0.8rem;
+		border: 1px solid var(--input-border-color); 
+		background-color: var(--input-bg-color); 
+		color: var(--input-text-color); 
+		border-radius: 4px;
+		font-size: 1rem;
+		box-sizing: border-box;
+		transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+	}
+	.form-group input:focus,
+	.form-group textarea:focus {
+		outline: none;
+		border-color: var(--input-focus-border-color); 
+		box-shadow: 0 0 0 2px var(--input-focus-shadow-color); 
+	}
+	.submit-button {
+		display: block;
+		width: 100%;
+		padding: 0.9rem 1.5rem;
+		background-color: var(--button-bg-color); 
+		color: var(--button-text-color); 
+		border: none;
+		border-radius: 5px;
+		font-size: 1.1rem;
+		font-weight: bold;
+		cursor: pointer;
+		transition: background-color 0.2s ease, color 0.3s ease;
+	}
+	.submit-button:hover {
+		background-color: var(--button-hover-bg-color); 
+	}
+
+	.contact-buttons {
+		text-align: center;
+		margin-top: 2.5rem;
+	}
+	.contact-buttons p {
+		margin-bottom: 1rem;
+		color: var(--text-color);
+		opacity: 0.8;
+		transition: color 0.3s ease;
+	}
+
+  /* Base styles for contact buttons */
+	.contact-button {
+    display: inline-flex; 
+    align-items: center;
+    justify-content: center; 
+    gap: 0.6rem; 
+    padding: 0.7rem 1.2rem; 
+    border-radius: 25px; 
+    text-decoration: none;
+    font-weight: 500; 
+    margin: 0.5rem;
+    transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease; 
+    border: 1px solid transparent; 
+    min-width: auto; 
+    box-shadow: none; 
+  }
+
+  .contact-button .icon {
+    font-size: 1.2em; 
+    line-height: 1; 
+    display: inline-flex; 
+    align-items: center;
+  }
+
+  .contact-button .icon svg {
+    width: 1em; 
+    height: 1em; 
+    vertical-align: middle; 
+  }
+
+  .contact-button .text {
+    font-size: 0.9em; 
+  }
+
+  /* Specific button base colors */
+  .contact-button.phone {
+    background-color: #4CAF50; /* Green */
+    color: white; /* Text and emoji icon color */
+  }
+  .contact-button.phone .icon {
+     color: white; /* Explicitly for emoji if needed */
+  }
+
+  .contact-button.discord {
+    background-color: #5865F2; /* Discord Blurple */
+    color: white; /* Text color */
+    /* SVG fill is now 'white' directly in the SVG markup */
+  }
+
+  .contact-button.telegram {
+    background-color: #0088cc; /* Telegram Blue */
+    color: white; /* Text color */
+    /* SVG has its own fills */
+  }
+
+  /* General hover/focus transform and shadow */
+  .contact-button:hover,
+  .contact-button:focus-visible {
+    transform: translateY(-2px) scale(1.02);
+  }
+
+  html:not(.dark) .contact-button:hover,
+  html:not(.dark) .contact-button:focus-visible {
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  }
+  html.dark .contact-button:hover,
+  html.dark .contact-button:focus-visible {
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+  }
+  
+  /* --- Phone Button Hover/Focus --- */
+  html:not(.dark) .contact-button.phone:hover,
+  html:not(.dark) .contact-button.phone:focus-visible {
+    background-color: #388E3C; /* Darker Green */
+    color: white;
+  }
+  html:not(.dark) .contact-button.phone:hover .icon,
+  html:not(.dark) .contact-button.phone:focus-visible .icon {
+    color: white;
+  }
+  html.dark .contact-button.phone:hover,
+  html.dark .contact-button.phone:focus-visible {
+    background-color: #66BB6A; /* Lighter Green */
+    color: white;
+  }
+  html.dark .contact-button.phone:hover .icon,
+  html.dark .contact-button.phone:focus-visible .icon {
+    color: white;
+  }
+
+  /* --- Discord Button Hover/Focus --- */
+  html:not(.dark) .contact-button.discord:hover,
+  html:not(.dark) .contact-button.discord:focus-visible {
+    background-color: #4553E8; /* Darker Blurple */
+    color: white; /* Text color */
+  }
+  html.dark .contact-button.discord:hover,
+  html.dark .contact-button.discord:focus-visible {
+    background-color: #707bf5; /* Lighter Blurple */
+    color: white; /* Text color */
+  }
+
+  /* --- Telegram Button Hover/Focus --- */
+  html:not(.dark) .contact-button.telegram:hover,
+  html:not(.dark) .contact-button.telegram:focus-visible {
+    background-color: #0077B3; /* Darker Blue */
+    color: white; /* Text color */
+  }
+  html.dark .contact-button.telegram:hover,
+  html.dark .contact-button.telegram:focus-visible {
+    background-color: #29B6F6; /* Lighter Blue */
+    color: white; /* Text color */
+  }
+  
+  /* Active state */
+  .contact-button:active {
+    transform: translateY(0px) scale(1);
+  }
+  html:not(.dark) .contact-button:active {
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.15);
+  }
+  html.dark .contact-button:active {
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.25);
+  }
+
+
+	@media (max-width: 768px) { /* Tablet and larger phones */
+		.swiper-slide { 
+      width: 70%; 
+    }
+    .vitrine-image {
+      height: 190px; 
+    }
+    .vitrine-content h3 {
+      font-size: 1.05rem;
+    }
+    .vitrine-content p {
+      font-size: 0.88rem;
+    }
+	}
+
+	@media (max-width: 640px) { /* Smaller phones */
+		section { padding: 1.5rem; }
+		.swiper-slide { 
+      width: 85%; 
+    }
+		.vitrine-image { 
+      height: 160px; 
+    }
+		.vitrine-content { 
+      padding: 1rem; 
+    }
+    .vitrine-content h3 {
+      font-size: 1rem; 
+      margin-bottom: 0.5rem;
+    }
+    .vitrine-content p {
+      font-size: 0.85rem; 
+      margin-bottom: 0.75rem;
+    }
+		.vitrine-link { 
+      display: block; /* Ensure it's block for width/margin control */
+      box-sizing: border-box; /* Include padding and border in the element's total width and height */
+      width: 100%; /* Make button take full available width of parent's content box */
+      /* max-width: none; /* Removed as it's redundant with width: 100% and box-sizing, and could be problematic */
+      padding: 0.7rem 1rem; /* Adjusted padding */
+      font-size: 0.9rem;
+      text-align: center; /* Center text within the button */
+    }
+		.swiper-button-prev, .swiper-button-next { 
+      width: 35px; 
+      height: 35px;
+      transform: translateY(-50%); 
+    }
+		.swiper-button-prev::after, .swiper-button-next::after { font-size: 1rem; }
+		.swiper-button-prev { left: 5px; }
+		.swiper-button-next { right: 5px; }
+		.contact-form { padding: 1.5rem; }
+		.contact-buttons { display: flex; flex-direction: column; align-items: center; gap: 0.8rem; } 
+		.contact-button { 
+      width: 90%; 
+      max-width: 320px; 
+      margin: 0.4rem 0; 
+      padding: 0.8rem 1rem; 
+    }
+		.map-container iframe { height: 250px; }
+	}
+
+  @media (max-width: 480px) { /* Extra small phones */
+    .swiper-slide {
+      width: 90%; 
+    }
+    .vitrine-image {
+      height: 140px;
+    }
+    .vitrine-content {
+      padding: 0.8rem;
+    }
+    .vitrine-content h3 {
+      font-size: 0.95rem;
+    }
+    .vitrine-content p {
+      font-size: 0.8rem;
+      line-height: 1.4;
+    }
+    .vitrine-link {
+      /* Inherits display: block, box-sizing: border-box, width: 100%, text-align: center from 640px breakpoint */
+      padding: 0.6rem 0.8rem; /* Adjusted padding for very small screens */
+      font-size: 0.85rem;
+    }
+  }
+</style>

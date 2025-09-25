@@ -1,0 +1,340 @@
+---
+const coverPageId = "sos-pc-cover-page";
+---
+<div id={coverPageId} class="cover-page" aria-labelledby="cover-heading" role="dialog" aria-modal="true">
+  <div class="cover-content">
+    <img src="/logo.png" alt="SOS-PC Company Logo" class="logo" />
+    <h1 id="cover-heading" class="brand-name">SOS-PC</h1>
+    <p class="tagline">Unlocking Your Tech Potential</p>
+    <div class="interaction-cue" role="button" tabindex="0" aria-label="Swipe up, scroll, or press Enter to explore">
+      <span class="cue-text">Swipe up or scroll to explore</span>
+      <svg class="arrow-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="32" height="32" aria-hidden="true">
+        <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z" transform="rotate(-90 12 12)"/>
+      </svg>
+    </div>
+  </div>
+</div>
+
+<style>
+  .cover-page {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: linear-gradient(135deg, var(--gradient-color-1, #1A0F2A), var(--gradient-color-2, #301E59));
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+    transition: opacity 0.7s cubic-bezier(0.25, 1, 0.5, 1), transform 0.7s cubic-bezier(0.25, 1, 0.5, 1), visibility 0s linear 0s;
+    user-select: none; /* Prevent text selection during drag */
+  }
+
+  .cover-page.dismissed {
+    transform: translateY(-100%);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.7s ease-out, transform 0.7s ease-out, visibility 0s linear 0.7s;
+    pointer-events: none;
+  }
+
+  .cover-content {
+    text-align: center;
+    animation: fadeInContent 1.2s ease-out 0.3s forwards;
+    opacity: 0;
+    padding: 20px;
+  }
+
+  @keyframes fadeInContent {
+    to {
+      opacity: 1;
+    }
+  }
+
+  .logo {
+    width: 20vw; /* Adjust this percentage as needed */
+    max-width: 150px; /* Optional: set a max size for very large screens */
+    min-width: 70px; /* Optional: set a min size for very small screens */
+    height: auto; /* Maintain aspect ratio */
+    margin-bottom: 1.5rem; /* Increased margin a bit */
+    object-fit: contain; 
+  }
+
+  .brand-name {
+    font-size: clamp(2rem, 6vw, 3rem);
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+    color: white;
+    letter-spacing: 1px;
+  }
+
+  .tagline {
+    font-size: clamp(1rem, 3vw, 1.25rem);
+    margin-bottom: 3rem;
+    color: var(--accent-light, #e0e0e0);
+    opacity: 0.9;
+  }
+
+  .interaction-cue {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    padding: 10px 15px;
+    border-radius: 8px;
+    transition: background-color 0.2s ease;
+  }
+  .interaction-cue:focus-visible {
+    background-color: rgba(255, 255, 255, 0.1);
+    outline: 2px solid var(--accent-light, #e0e0e0);
+    outline-offset: 2px;
+  }
+  .interaction-cue:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+  }
+
+  .cue-text {
+    font-size: clamp(0.9rem, 2.5vw, 1rem);
+    margin-bottom: 0.75rem;
+  }
+
+  .arrow-icon {
+    width: clamp(28px, 5vw, 32px);
+    height: clamp(28px, 5vw, 32px);
+    animation: bounceArrow 2.5s infinite ease-in-out;
+  }
+
+  @keyframes bounceArrow {
+    0%, 20%, 50%, 80%, 100% {
+      transform: translateY(0);
+    }
+    40% {
+      transform: translateY(-12px);
+    }
+    60% {
+      transform: translateY(-6px);
+    }
+  }
+</style>
+
+<script define:vars={{ coverPageId }}>
+  document.addEventListener('DOMContentLoaded', () => {
+    const coverPage = document.getElementById(coverPageId);
+    if (!coverPage) return;
+
+    const interactionCue = coverPage.querySelector('.interaction-cue');
+    const dismissedKey = 'sospc_cover_dismissed_session_v1';
+    let isDismissed = false;
+    
+    let isInteracting = false; // True during mouse/touch drag
+    let startY_interaction = 0; // Start Y for mouse/touch drag
+    let initialTranslateYOnDragStart = 0; // Cover's Y pos when drag started
+
+    let currentAppliedTranslateY = 0; // Master Y position of the cover
+    let scrollEndTimer = null;
+    const SCROLL_SENSITIVITY = 1; // Adjust for desired scroll speed
+    const DISMISS_THRESHOLD_PERCENT = 0.4; // 40% of cover height
+
+    const eventHandlers = {
+      scroll: null,
+      keyDown: null,
+      clickCue: null,
+      // Bound versions for add/removeEventListener
+      boundHandleInteractionStart: null,
+      boundHandleInteractionMove: null,
+      boundHandleInteractionEnd: null,
+    };
+    
+    function applyTransform(translateY) {
+      // Clamp translateY
+      const minTranslateY = -coverPage.offsetHeight;
+      const maxTranslateY = 0;
+      translateY = Math.max(minTranslateY, Math.min(maxTranslateY, translateY));
+      
+      coverPage.style.transform = `translateY(${translateY}px)`;
+      currentAppliedTranslateY = translateY;
+    }
+
+    function dismissCover() {
+      if (isDismissed) return;
+      isDismissed = true;
+      clearTimeout(scrollEndTimer);
+
+      // Clean up interaction listeners if any were active
+      if (isInteracting) {
+        document.removeEventListener('mousemove', eventHandlers.boundHandleInteractionMove);
+        document.removeEventListener('mouseup', eventHandlers.boundHandleInteractionEnd);
+        coverPage.removeEventListener('touchmove', eventHandlers.boundHandleInteractionMove);
+        coverPage.removeEventListener('touchend', eventHandlers.boundHandleInteractionEnd);
+        coverPage.removeEventListener('touchcancel', eventHandlers.boundHandleInteractionEnd);
+        isInteracting = false;
+      }
+      
+      coverPage.style.transition = ''; // Ensure CSS transitions are active for the dismissal animation
+      coverPage.classList.add('dismissed');
+      
+      try {
+        sessionStorage.setItem(dismissedKey, 'true');
+      } catch (e) {
+        console.warn('Session storage is not available or disabled.');
+      }
+
+      const mainContent = document.querySelector('main');
+      if (mainContent) {
+        mainContent.focus({ preventScroll: true });
+      }
+      
+      // Remove general listeners
+      document.removeEventListener('wheel', eventHandlers.scroll);
+      document.removeEventListener('keydown', eventHandlers.keyDown);
+      coverPage.removeEventListener('touchstart', eventHandlers.boundHandleInteractionStart);
+      coverPage.removeEventListener('mousedown', eventHandlers.boundHandleInteractionStart);
+      if (interactionCue && eventHandlers.clickCue) {
+        interactionCue.removeEventListener('click', eventHandlers.clickCue);
+      }
+    }
+
+    try {
+      if (sessionStorage.getItem(dismissedKey) === 'true') {
+        coverPage.style.transitionProperty = 'none'; // Hide instantly
+        requestAnimationFrame(() => {
+            coverPage.classList.add('dismissed');
+            isDismissed = true; // Set state
+            requestAnimationFrame(() => { // Restore transition property for future if needed
+                coverPage.style.transitionProperty = '';
+            });
+        });
+        return; // Don't attach any listeners if already dismissed by session
+      }
+    } catch (e) {
+      console.warn('Session storage is not available or disabled.');
+    }
+
+    function handleInteractionStart(event) {
+      if (isDismissed || isInteracting) return;
+
+      const isTouchEvent = event.type.startsWith('touch');
+      if (!isTouchEvent && event.button !== 0) return; // Only left mouse button
+
+      if (!isTouchEvent) event.preventDefault(); // Prevent text selection/drag for mouse
+
+      isInteracting = true;
+      startY_interaction = isTouchEvent ? event.touches[0].clientY : event.clientY;
+      initialTranslateYOnDragStart = currentAppliedTranslateY; // Capture current Y pos
+      
+      coverPage.style.transition = 'none'; // Direct manipulation
+
+      if (isTouchEvent) {
+        coverPage.addEventListener('touchmove', eventHandlers.boundHandleInteractionMove, { passive: false });
+        coverPage.addEventListener('touchend', eventHandlers.boundHandleInteractionEnd, { passive: false });
+        coverPage.addEventListener('touchcancel', eventHandlers.boundHandleInteractionEnd, { passive: false });
+      } else {
+        document.addEventListener('mousemove', eventHandlers.boundHandleInteractionMove, { passive: false });
+        document.addEventListener('mouseup', eventHandlers.boundHandleInteractionEnd, { passive: false });
+      }
+    }
+
+    function handleInteractionMove(event) {
+      if (!isInteracting || isDismissed) return;
+      event.preventDefault(); // Prevent page scroll during active drag/swipe
+
+      const isTouchEvent = event.type.startsWith('touch');
+      const currentPointerY = isTouchEvent ? event.touches[0].clientY : event.clientY;
+      let dragDelta = currentPointerY - startY_interaction;
+      applyTransform(initialTranslateYOnDragStart + dragDelta);
+    }
+
+    function handleInteractionEnd() {
+      if (!isInteracting || isDismissed) return;
+      isInteracting = false;
+      
+      coverPage.style.transition = ''; // Restore CSS transitions for snap/dismiss
+
+      document.removeEventListener('mousemove', eventHandlers.boundHandleInteractionMove);
+      document.removeEventListener('mouseup', eventHandlers.boundHandleInteractionEnd);
+      coverPage.removeEventListener('touchmove', eventHandlers.boundHandleInteractionMove);
+      coverPage.removeEventListener('touchend', eventHandlers.boundHandleInteractionEnd);
+      coverPage.removeEventListener('touchcancel', eventHandlers.boundHandleInteractionEnd);
+      
+      const upwardDisplacement = -currentAppliedTranslateY;
+      const dismissThresholdValue = coverPage.offsetHeight * DISMISS_THRESHOLD_PERCENT;
+
+      if (upwardDisplacement > dismissThresholdValue) {
+        dismissCover();
+      } else {
+        applyTransform(0); // Snap back to original position
+      }
+    }
+    
+    eventHandlers.boundHandleInteractionStart = handleInteractionStart;
+    eventHandlers.boundHandleInteractionMove = handleInteractionMove;
+    eventHandlers.boundHandleInteractionEnd = handleInteractionEnd;
+
+    coverPage.addEventListener('touchstart', eventHandlers.boundHandleInteractionStart, { passive: false });
+    coverPage.addEventListener('mousedown', eventHandlers.boundHandleInteractionStart, { passive: false });
+
+
+    eventHandlers.scroll = function handleScroll(event) {
+      if (isDismissed || isInteracting) return; // Don't scroll if dragging or dismissed
+      
+      event.preventDefault(); // Prevent page behind from scrolling
+      coverPage.style.transition = 'none'; // Direct manipulation
+
+      applyTransform(currentAppliedTranslateY - event.deltaY * SCROLL_SENSITIVITY);
+
+      clearTimeout(scrollEndTimer);
+      scrollEndTimer = setTimeout(() => {
+        if (isDismissed || isInteracting) return; // Check again in case state changed during timeout
+        
+        coverPage.style.transition = ''; // Restore transitions for snap/dismiss
+        const upwardDisplacement = -currentAppliedTranslateY;
+        const dismissThresholdValue = coverPage.offsetHeight * DISMISS_THRESHOLD_PERCENT;
+
+        if (upwardDisplacement > dismissThresholdValue) {
+          dismissCover();
+        } else if (currentAppliedTranslateY !== 0) { // Only snap if not already at 0
+          applyTransform(0); // Snap back
+        }
+      }, 150); // Adjust timeout for scroll end detection
+    };
+    document.addEventListener('wheel', eventHandlers.scroll, { passive: false });
+
+
+    eventHandlers.clickCue = function handleClick() {
+      if (isDismissed) return;
+      dismissCover();
+    };
+    if (interactionCue) {
+      interactionCue.addEventListener('click', eventHandlers.clickCue);
+    }
+
+    eventHandlers.keyDown = function handleKeyDown(event) {
+      if (isDismissed) return;
+      if (event.key === 'Enter' || event.key === ' ') {
+        if (document.activeElement === interactionCue) {
+           event.preventDefault();
+           dismissCover();
+        }
+      }
+      if (event.key === 'Escape') {
+        dismissCover();
+      }
+    };
+    document.addEventListener('keydown', eventHandlers.keyDown);
+
+    // Auto-focus interaction cue for accessibility
+    setTimeout(() => {
+      if (!isDismissed && interactionCue && typeof interactionCue.focus === 'function') {
+        if (!coverPage.classList.contains('dismissed')) { // Check again, session might have dismissed it
+            interactionCue.focus({ preventScroll: true });
+        }
+      }
+    }, 1600);
+  });
+</script>
