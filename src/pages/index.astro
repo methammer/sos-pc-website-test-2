@@ -178,7 +178,21 @@ if (apiKey) {
 		</div>
 	</section>
 
-	<section id="location" class="map-section">
+	
+		<section id="diagnostic" class="diagnostic-section">
+			<h2>Diagnostic PC Intelligent</h2>
+			<p class="diagnostic-intro">Notre IA analyse votre PC en profondeur et vous explique exactement ce qui ne va pas  gratuitement, en quelques secondes.</p>
+			<div class="diagnostic-card">
+				<div class="diagnostic-steps">
+					<div class="diag-step"><span class="diag-step-num">1</span><span>Appuyez sur <kbd>Windows</kbd> + <kbd>X</kbd> puis ouvrez <strong>Terminal</strong></span></div>
+					<div class="diag-step"><span class="diag-step-num">2</span><span>Copiez et collez la commande ci-dessous, puis appuyez sur <kbd>Entrée</kbd></span></div>
+					<div class="diag-step"><span class="diag-step-num">3</span><span>La page se recharge avec votre diagnostic prêt</span></div>
+				</div>
+				<div class="diag-cmd-box"><code id="diag-cmd">irm https://sos-pc.click/diag.ps1 | iex</code><button class="diag-copy-btn" onclick="copyDiagCmd()">Copier</button></div>
+				<p class="diag-privacy"> Aucun fichier personnel collecté. Uniquement les infos techniques (CPU, RAM, disques, erreurs système).</p>
+			</div>
+		</section>
+<section id="location" class="map-section">
 		<h2>Notre Zone d'Intervention Principale</h2>
 		<p>BasÃ© prÃ¨s de 04700 Le Castellet, nous intervenons dans les environs.</p>
 		<div class="map-container">
