@@ -539,7 +539,7 @@
       }, 1200);
 
       try {
-        const resp = await fetch('/api/analyze', {
+        const resp = await fetch('https://sos-pc-diagnostic.netlify.app/api/analyze', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ data: systemData, problem })
@@ -616,7 +616,7 @@
       chatHistory.push({ role: 'user', content: msg });
 
       try {
-        const resp = await fetch('/api/chat', {
+        const resp = await fetch('https://sos-pc-diagnostic.netlify.app/api/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
