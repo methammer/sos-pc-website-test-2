@@ -1,0 +1,651 @@
+---
+// src/pages/diagnostic.astro
+// Page de diagnostic PC intelligent - SOS-PC
+---
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Diagnostic PC Intelligent - SOS-PC</title>
+  <link rel="icon" href="/favicon.svg" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue: #185FA5;
+      --blue-light: #E6F1FB;
+      --blue-mid: #378ADD;
+      --teal: #1D9E75;
+      --teal-light: #E1F5EE;
+      --red: #E24B4A;
+      --red-light: #FCEBEB;
+      --amber: #BA7517;
+      --amber-light: #FAEEDA;
+      --green: #3B6D11;
+      --green-light: #EAF3DE;
+      --gray-100: #f4f4f2;
+      --gray-200: #e8e7e4;
+      --gray-600: #5F5E5A;
+      --gray-900: #1a1a18;
+      --radius: 10px;
+      --radius-sm: 6px;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--gray-100);
+      color: var(--gray-900);
+      min-height: 100vh;
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
+    /* ---- NAVBAR ---- */
+    nav {
+      background: white;
+      border-bottom: 1px solid var(--gray-200);
+      padding: 0 2rem;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .nav-logo { font-weight: 600; color: var(--blue); text-decoration: none; font-size: 16px; }
+    .nav-back { font-size: 13px; color: var(--gray-600); text-decoration: none; display: flex; align-items: center; gap: 6px; }
+    .nav-back:hover { color: var(--blue); }
+
+    /* ---- LAYOUT ---- */
+    .container { max-width: 860px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+
+    /* ---- STEP : LANDING ---- */
+    #step-landing { text-align: center; padding: 3rem 0 2rem; }
+    .hero-icon { width: 72px; height: 72px; background: var(--blue-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; }
+    h1 { font-size: 26px; font-weight: 600; margin-bottom: 0.75rem; }
+    .subtitle { color: var(--gray-600); max-width: 520px; margin: 0 auto 2.5rem; }
+
+    .launch-card {
+      background: white;
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius);
+      padding: 2rem;
+      max-width: 560px;
+      margin: 0 auto;
+      text-align: left;
+    }
+    .launch-card h2 { font-size: 17px; font-weight: 600; margin-bottom: 0.5rem; }
+    .launch-card p { font-size: 14px; color: var(--gray-600); margin-bottom: 1.5rem; }
+
+    .steps-list { list-style: none; margin-bottom: 1.5rem; }
+    .steps-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 8px 0;
+      font-size: 14px;
+    }
+    .step-dot {
+      width: 22px; height: 22px; border-radius: 50%; background: var(--blue);
+      color: white; font-size: 11px; font-weight: 600; display: flex;
+      align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px;
+    }
+
+    .cmd-box {
+      background: #1e1e1e;
+      border-radius: var(--radius-sm);
+      padding: 1rem 1.25rem;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .cmd-text { font-family: 'Courier New', monospace; font-size: 13px; color: #4ec9b0; word-break: break-all; }
+    .btn-copy {
+      background: #333; color: #ccc; border: none; border-radius: 5px;
+      padding: 6px 12px; font-size: 12px; cursor: pointer; flex-shrink: 0;
+      transition: background 0.2s;
+    }
+    .btn-copy:hover { background: #444; }
+    .btn-copy.copied { background: var(--teal); color: white; }
+
+    .btn-primary {
+      background: var(--blue); color: white; border: none;
+      border-radius: var(--radius-sm); padding: 11px 24px;
+      font-size: 14px; font-weight: 500; cursor: pointer;
+      width: 100%; transition: background 0.2s;
+    }
+    .btn-primary:hover { background: #0C447C; }
+    .btn-primary:disabled { background: var(--gray-200); color: var(--gray-600); cursor: default; }
+
+    .manual-toggle {
+      text-align: center; margin-top: 1rem;
+      font-size: 13px; color: var(--gray-600);
+    }
+    .manual-toggle a { color: var(--blue); cursor: pointer; text-decoration: none; }
+    .manual-toggle a:hover { text-decoration: underline; }
+
+    /* ---- STEP : PROBLEM ---- */
+    #step-problem { display: none; }
+    .card {
+      background: white;
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      margin-bottom: 1.25rem;
+    }
+    .card h2 { font-size: 16px; font-weight: 600; margin-bottom: 1rem; }
+
+    .collected-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 8px; margin-bottom: 1.5rem;
+    }
+    .collected-item {
+      background: var(--teal-light); border-radius: var(--radius-sm);
+      padding: 8px 12px; font-size: 12px;
+    }
+    .collected-item .label { color: var(--teal); font-weight: 500; margin-bottom: 2px; }
+    .collected-item .value { color: #085041; font-weight: 600; }
+
+    textarea {
+      width: 100%; border: 1px solid var(--gray-200); border-radius: var(--radius-sm);
+      padding: 12px; font-size: 14px; font-family: inherit; resize: vertical;
+      min-height: 100px; outline: none; transition: border 0.2s;
+    }
+    textarea:focus { border-color: var(--blue-mid); }
+
+    /* ---- STEP : ANALYZING ---- */
+    #step-analyzing { display: none; text-align: center; padding: 4rem 0; }
+    .spinner {
+      width: 48px; height: 48px; border: 3px solid var(--gray-200);
+      border-top-color: var(--blue); border-radius: 50%;
+      animation: spin 0.8s linear infinite; margin: 0 auto 1.5rem;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ---- STEP : REPORT ---- */
+    #step-report { display: none; }
+
+    .score-bar-wrap { margin-bottom: 1.5rem; }
+    .score-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+    .score-label { font-size: 14px; color: var(--gray-600); }
+    .score-value { font-size: 28px; font-weight: 600; }
+    .score-bar { height: 8px; background: var(--gray-200); border-radius: 4px; overflow: hidden; }
+    .score-fill { height: 100%; border-radius: 4px; transition: width 1s ease; }
+
+    .issues-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 1.5rem; }
+    .issue-item {
+      border-radius: var(--radius-sm); padding: 12px 16px;
+      border-left: 4px solid;
+    }
+    .issue-item.critical { background: var(--red-light); border-color: var(--red); }
+    .issue-item.warning  { background: var(--amber-light); border-color: var(--amber); }
+    .issue-item.ok       { background: var(--green-light); border-color: var(--green); }
+
+    .issue-header { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+    .issue-badge {
+      font-size: 10px; font-weight: 600; padding: 2px 7px;
+      border-radius: 20px; text-transform: uppercase;
+    }
+    .issue-item.critical .issue-badge { background: var(--red); color: white; }
+    .issue-item.warning .issue-badge  { background: var(--amber); color: white; }
+    .issue-item.ok .issue-badge       { background: var(--green); color: white; }
+    .issue-title { font-size: 14px; font-weight: 600; }
+    .issue-desc  { font-size: 13px; color: var(--gray-600); margin-bottom: 4px; }
+    .issue-action { font-size: 13px; font-style: italic; }
+
+    .quick-wins { list-style: none; }
+    .quick-wins li { padding: 8px 0; border-bottom: 1px solid var(--gray-200); font-size: 14px; display: flex; gap: 8px; align-items: flex-start; }
+    .quick-wins li:last-child { border: none; }
+    .quick-wins li::before { content: "→"; color: var(--blue); flex-shrink: 0; }
+
+    .pro-banner {
+      background: var(--blue-light); border: 1px solid #B5D4F4;
+      border-radius: var(--radius); padding: 1.25rem 1.5rem;
+      margin-bottom: 1.25rem; display: flex; gap: 16px; align-items: flex-start;
+    }
+    .pro-icon { font-size: 24px; flex-shrink: 0; }
+    .pro-banner h3 { font-size: 15px; font-weight: 600; color: var(--blue); margin-bottom: 4px; }
+    .pro-banner p { font-size: 13px; color: #185FA5; }
+    .btn-contact {
+      display: inline-block; margin-top: 10px; background: var(--blue); color: white;
+      padding: 9px 20px; border-radius: var(--radius-sm); font-size: 13px;
+      font-weight: 500; text-decoration: none; border: none; cursor: pointer;
+    }
+
+    /* ---- CHAT ---- */
+    .chat-wrap { margin-top: 1.25rem; }
+    .chat-messages {
+      background: var(--gray-100); border-radius: var(--radius-sm);
+      padding: 1rem; min-height: 80px; max-height: 320px;
+      overflow-y: auto; margin-bottom: 10px;
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .msg { max-width: 80%; padding: 10px 14px; border-radius: var(--radius-sm); font-size: 14px; line-height: 1.5; }
+    .msg.user { background: var(--blue); color: white; align-self: flex-end; }
+    .msg.assistant { background: white; border: 1px solid var(--gray-200); align-self: flex-start; }
+    .chat-input-row { display: flex; gap: 8px; }
+    .chat-input-row input {
+      flex: 1; border: 1px solid var(--gray-200); border-radius: var(--radius-sm);
+      padding: 10px 14px; font-size: 14px; outline: none; transition: border 0.2s;
+    }
+    .chat-input-row input:focus { border-color: var(--blue-mid); }
+    .btn-send {
+      background: var(--blue); color: white; border: none;
+      border-radius: var(--radius-sm); padding: 10px 18px; cursor: pointer;
+      font-size: 14px; font-weight: 500;
+    }
+    .btn-send:disabled { background: var(--gray-200); color: var(--gray-600); cursor: default; }
+
+    /* ---- MANUAL FORM ---- */
+    #manual-form { display: none; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1rem; }
+    .form-group { display: flex; flex-direction: column; gap: 4px; }
+    .form-group label { font-size: 13px; color: var(--gray-600); font-weight: 500; }
+    .form-group input, .form-group select {
+      border: 1px solid var(--gray-200); border-radius: var(--radius-sm);
+      padding: 9px 12px; font-size: 14px; outline: none; transition: border 0.2s;
+    }
+    .form-group input:focus, .form-group select:focus { border-color: var(--blue-mid); }
+
+    @media (max-width: 600px) {
+      .form-grid { grid-template-columns: 1fr; }
+      .collected-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="/" class="nav-logo">SOS-PC</a>
+    <a href="/" class="nav-back">← Retour au site</a>
+  </nav>
+
+  <div class="container">
+
+    <!-- ===== ÉTAPE 1 : LANDING ===== -->
+    <div id="step-landing">
+      <div class="hero-icon">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#185FA5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
+        </svg>
+      </div>
+      <h1>Diagnostic PC Intelligent</h1>
+      <p class="subtitle">Obtenez une analyse complète de votre PC en quelques secondes grâce à notre outil alimenté par l'IA.</p>
+
+      <div class="launch-card">
+        <h2>Comment ça marche ?</h2>
+        <p>Copiez la commande ci-dessous, ouvrez PowerShell et collez-la. C'est tout !</p>
+
+        <ul class="steps-list">
+          <li>
+            <span class="step-dot">1</span>
+            <span>Cliquez sur <strong>Copier la commande</strong></span>
+          </li>
+          <li>
+            <span class="step-dot">2</span>
+            <span>Appuyez sur <kbd style="background:var(--gray-100);padding:1px 5px;border-radius:3px;font-size:12px;">Windows</kbd> + <kbd style="background:var(--gray-100);padding:1px 5px;border-radius:3px;font-size:12px;">X</kbd> puis choisissez <strong>Terminal</strong></span>
+          </li>
+          <li>
+            <span class="step-dot">3</span>
+            <span>Collez et appuyez sur <kbd style="background:var(--gray-100);padding:1px 5px;border-radius:3px;font-size:12px;">Entrée</kbd></span>
+          </li>
+        </ul>
+
+        <div class="cmd-box">
+          <span class="cmd-text" id="cmd-text">irm https://sos-pc.click/diag.ps1 | iex</span>
+          <button class="btn-copy" id="btn-copy" onclick="copyCommand()">Copier</button>
+        </div>
+
+        <button class="btn-primary" id="btn-waiting" disabled>
+          En attente de la collecte...
+        </button>
+
+        <div class="manual-toggle">
+          <a onclick="showManual()">Saisir les informations manuellement</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== FORMULAIRE MANUEL ===== -->
+    <div id="manual-form">
+      <div class="card">
+        <h2>Saisie manuelle des informations</h2>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Système d'exploitation</label>
+            <select id="m-os">
+              <option value="Windows 11">Windows 11</option>
+              <option value="Windows 10">Windows 10</option>
+              <option value="Windows 7/8">Windows 7/8</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>RAM installée</label>
+            <select id="m-ram">
+              <option value="4 Go">4 Go</option>
+              <option value="8 Go" selected>8 Go</option>
+              <option value="16 Go">16 Go</option>
+              <option value="32 Go ou plus">32 Go ou plus</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Âge du PC (années)</label>
+            <input type="number" id="m-age" placeholder="ex: 5" min="0" max="30" />
+          </div>
+          <div class="form-group">
+            <label>Espace disque libre (Go)</label>
+            <input type="number" id="m-disk" placeholder="ex: 50" />
+          </div>
+        </div>
+        <div class="form-group" style="margin-bottom:1rem;">
+          <label>Description du problème *</label>
+          <textarea id="m-problem" placeholder="Décrivez votre problème en détail : depuis quand, dans quelles circonstances, quels messages d'erreur..." style="min-height:120px;"></textarea>
+        </div>
+        <button class="btn-primary" onclick="submitManual()">Analyser avec l'IA →</button>
+      </div>
+    </div>
+
+    <!-- ===== ÉTAPE 2 : PROBLÈME ===== -->
+    <div id="step-problem">
+      <div class="card">
+        <h2>Informations collectées ✓</h2>
+        <div class="collected-grid" id="collected-grid">
+          <!-- rempli dynamiquement -->
+        </div>
+        <div class="form-group">
+          <label style="font-size:14px;color:var(--gray-600);font-weight:500;display:block;margin-bottom:8px;">
+            Quel est votre problème principal ? <span style="color:var(--gray-600);font-weight:400;">(facultatif mais utile)</span>
+          </label>
+          <textarea id="problem-input" placeholder="Ex : Mon PC est lent depuis une mise à jour Windows, il met 5 minutes à démarrer..."></textarea>
+        </div>
+        <button class="btn-primary" onclick="startAnalysis()" style="margin-top:1rem;">
+          Analyser mon PC avec l'IA →
+        </button>
+      </div>
+    </div>
+
+    <!-- ===== ÉTAPE 3 : ANALYSE ===== -->
+    <div id="step-analyzing">
+      <div class="spinner"></div>
+      <h2 style="margin-bottom:0.5rem;">Analyse en cours...</h2>
+      <p style="color:var(--gray-600);" id="analyzing-msg">L'IA examine vos données système</p>
+    </div>
+
+    <!-- ===== ÉTAPE 4 : RAPPORT ===== -->
+    <div id="step-report">
+
+      <div class="card">
+        <h2 style="margin-bottom:1.25rem;">Rapport de diagnostic</h2>
+        <div class="score-bar-wrap">
+          <div class="score-header">
+            <span class="score-label">Score de santé global</span>
+            <span class="score-value" id="score-value">—</span>
+          </div>
+          <div class="score-bar">
+            <div class="score-fill" id="score-fill" style="width:0%"></div>
+          </div>
+        </div>
+        <p id="report-summary" style="color:var(--gray-600);font-size:14px;"></p>
+      </div>
+
+      <div class="card">
+        <h2 style="margin-bottom:1rem;">Points détectés</h2>
+        <div class="issues-list" id="issues-list"></div>
+      </div>
+
+      <div id="quick-wins-card" class="card" style="display:none;">
+        <h2 style="margin-bottom:1rem;">Actions rapides recommandées</h2>
+        <ul class="quick-wins" id="quick-wins-list"></ul>
+      </div>
+
+      <div id="pro-banner" class="pro-banner" style="display:none;">
+        <span class="pro-icon">🛠</span>
+        <div>
+          <h3>Intervention professionnelle recommandée</h3>
+          <p id="pro-reason"></p>
+          <a href="/#contact" class="btn-contact">Contacter SOS-PC</a>
+        </div>
+      </div>
+
+      <div class="card chat-wrap">
+        <h2 style="margin-bottom:1rem;">Questions sur votre diagnostic</h2>
+        <div class="chat-messages" id="chat-messages">
+          <div class="msg assistant">Bonjour ! Je viens d'analyser votre PC. Avez-vous des questions sur le rapport ou souhaitez-vous plus d'informations sur un problème en particulier ?</div>
+        </div>
+        <div class="chat-input-row">
+          <input type="text" id="chat-input" placeholder="Posez votre question..." onkeydown="if(event.key==='Enter') sendChat()" />
+          <button class="btn-send" id="btn-send" onclick="sendChat()">Envoyer</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    let systemData = null;
+    let reportData = null;
+    const chatHistory = [];
+
+    // ---- Lecture des données URL ----
+    function readURLData() {
+      const params = new URLSearchParams(window.location.search);
+      const encoded = params.get('d');
+      if (!encoded) return null;
+      try {
+        const json = atob(encoded);
+        return JSON.parse(json);
+      } catch { return null; }
+    }
+
+    // ---- Init ----
+    window.addEventListener('DOMContentLoaded', () => {
+      systemData = readURLData();
+      if (systemData) {
+        showStep('problem');
+        fillCollectedGrid(systemData);
+      }
+    });
+
+    // ---- Affichage des données collectées ----
+    function fillCollectedGrid(d) {
+      const grid = document.getElementById('collected-grid');
+      const ramUsed = d.os?.ram_total_gb && d.os?.ram_free_gb
+        ? Math.round((1 - d.os.ram_free_gb / d.os.ram_total_gb) * 100) + '%'
+        : '?';
+      const disk = d.disks?.[0];
+      const items = [
+        { label: 'Système',   value: d.os?.name?.replace('Microsoft Windows ', 'Win ') || '?' },
+        { label: 'Processeur', value: d.cpu?.name?.split(' ').slice(0,4).join(' ') || '?' },
+        { label: 'RAM',       value: `${d.os?.ram_total_gb || '?'} Go (${ramUsed} utilisée)` },
+        { label: 'Disque C:', value: disk ? `${disk.free_gb} Go libres / ${disk.total_gb} Go` : '?' },
+        { label: 'Erreurs 24h', value: `${d.events?.critical_24h || 0} événements` },
+        { label: 'Démarrage', value: `${(d.startup || []).length} apps auto` },
+      ];
+      grid.innerHTML = items.map(i => `
+        <div class="collected-item">
+          <div class="label">${i.label}</div>
+          <div class="value">${i.value}</div>
+        </div>
+      `).join('');
+    }
+
+    // ---- Navigation entre étapes ----
+    function showStep(step) {
+      ['landing', 'problem', 'analyzing', 'report'].forEach(s => {
+        document.getElementById('step-' + s).style.display = 'none';
+      });
+      document.getElementById('manual-form').style.display = 'none';
+      document.getElementById('step-' + step).style.display = step === 'landing' ? 'block' : 'block';
+    }
+
+    // ---- Copier la commande ----
+    function copyCommand() {
+      const cmd = document.getElementById('cmd-text').textContent;
+      navigator.clipboard.writeText(cmd).then(() => {
+        const btn = document.getElementById('btn-copy');
+        btn.textContent = 'Copié !';
+        btn.classList.add('copied');
+        document.getElementById('btn-waiting').textContent = 'Retourner ici après exécution →';
+        document.getElementById('btn-waiting').disabled = false;
+        document.getElementById('btn-waiting').onclick = () => location.reload();
+        setTimeout(() => { btn.textContent = 'Copier'; btn.classList.remove('copied'); }, 2500);
+      });
+    }
+
+    // ---- Formulaire manuel ----
+    function showManual() {
+      document.getElementById('step-landing').style.display = 'none';
+      document.getElementById('manual-form').style.display = 'block';
+    }
+
+    function submitManual() {
+      const problem = document.getElementById('m-problem').value.trim();
+      if (!problem) { alert('Merci de décrire votre problème.'); return; }
+      systemData = {
+        os: { name: document.getElementById('m-os').value, ram_total_gb: parseFloat(document.getElementById('m-ram').value) || 8, ram_free_gb: null },
+        cpu: { name: 'Non renseigné', load: null },
+        gpu: { name: 'Non renseigné' },
+        disks: [{ letter: 'C:', free_gb: parseFloat(document.getElementById('m-disk').value) || null, total_gb: null, pct_used: null }],
+        procs: [], startup: [],
+        events: { critical_24h: null },
+        manual: true,
+        age_years: parseFloat(document.getElementById('m-age').value) || null
+      };
+      callAnalyze(problem);
+    }
+
+    // ---- Lancer l'analyse ----
+    function startAnalysis() {
+      const problem = document.getElementById('problem-input').value.trim();
+      callAnalyze(problem);
+    }
+
+    async function callAnalyze(problem) {
+      showStep('analyzing');
+      const msgs = [
+        'L\'IA examine vos données système...',
+        'Analyse de la mémoire et du processeur...',
+        'Vérification du stockage et des erreurs...',
+        'Génération du rapport...'
+      ];
+      let i = 0;
+      const interval = setInterval(() => {
+        if (i < msgs.length) document.getElementById('analyzing-msg').textContent = msgs[i++];
+      }, 1200);
+
+      try {
+        const resp = await fetch('/api/analyze', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ data: systemData, problem })
+        });
+
+        clearInterval(interval);
+
+        if (!resp.ok) throw new Error('Erreur serveur');
+        const json = await resp.json();
+
+        if (json.report) {
+          reportData = json.report;
+          displayReport(json.report);
+          showStep('report');
+        } else {
+          throw new Error('Rapport vide');
+        }
+      } catch (err) {
+        clearInterval(interval);
+        alert('Une erreur est survenue lors de l\'analyse. Veuillez réessayer ou contacter SOS-PC directement.');
+        showStep('landing');
+      }
+    }
+
+    // ---- Afficher le rapport ----
+    function displayReport(report) {
+      // Score
+      const score = report.score || 50;
+      document.getElementById('score-value').textContent = score + '/100';
+      const fill = document.getElementById('score-fill');
+      fill.style.background = score >= 70 ? 'var(--teal)' : score >= 40 ? 'var(--amber)' : 'var(--red)';
+      setTimeout(() => { fill.style.width = score + '%'; }, 100);
+
+      // Résumé
+      document.getElementById('report-summary').textContent = report.summary || '';
+
+      // Issues
+      const list = document.getElementById('issues-list');
+      list.innerHTML = (report.issues || []).map(issue => `
+        <div class="issue-item ${issue.level || 'ok'}">
+          <div class="issue-header">
+            <span class="issue-badge">${issue.level === 'critical' ? 'Critique' : issue.level === 'warning' ? 'Attention' : 'OK'}</span>
+            <span class="issue-title">${issue.category || ''} — ${issue.title || ''}</span>
+          </div>
+          <p class="issue-desc">${issue.description || ''}</p>
+          ${issue.action ? `<p class="issue-action">→ ${issue.action}</p>` : ''}
+        </div>
+      `).join('');
+
+      // Quick wins
+      if (report.quick_wins?.length) {
+        document.getElementById('quick-wins-card').style.display = 'block';
+        document.getElementById('quick-wins-list').innerHTML = report.quick_wins
+          .map(tip => `<li>${tip}</li>`).join('');
+      }
+
+      // Bannière pro
+      if (report.needs_professional) {
+        document.getElementById('pro-banner').style.display = 'flex';
+        document.getElementById('pro-reason').textContent = report.professional_reason || '';
+      }
+    }
+
+    // ---- Chat ----
+    async function sendChat() {
+      const input = document.getElementById('chat-input');
+      const msg = input.value.trim();
+      if (!msg) return;
+
+      input.value = '';
+      document.getElementById('btn-send').disabled = true;
+
+      appendMessage('user', msg);
+      chatHistory.push({ role: 'user', content: msg });
+
+      try {
+        const resp = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            messages: chatHistory,
+            systemData,
+            report: reportData
+          })
+        });
+        const json = await resp.json();
+        const reply = json.message || 'Désolé, je n\'ai pas pu répondre.';
+        chatHistory.push({ role: 'assistant', content: reply });
+        appendMessage('assistant', reply);
+      } catch {
+        appendMessage('assistant', 'Une erreur est survenue. Veuillez réessayer.');
+      } finally {
+        document.getElementById('btn-send').disabled = false;
+        input.focus();
+      }
+    }
+
+    function appendMessage(role, text) {
+      const box = document.getElementById('chat-messages');
+      const div = document.createElement('div');
+      div.className = 'msg ' + role;
+      div.textContent = text;
+      box.appendChild(div);
+      box.scrollTop = box.scrollHeight;
+    }
+  </script>
+
+</body>
+</html>
