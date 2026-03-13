@@ -397,6 +397,579 @@ const maxNavbarHeight = "80px"; // Adjusted navbar height
 			})();
 		</script>
 
+
+		<!-- ===== SOS-PC ASSISTANT FLOTTANT ===== -->
+		<div id="sospc-widget">
+
+			<!-- Bouton flottant toujours visible -->
+			<button id="sospc-fab" onclick="sospcToggle()" aria-label="Assistant SOS-PC">
+				<span id="sospc-fab-icon">
+					<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+				</span>
+				<span id="sospc-fab-text">Diagnostic PC</span>
+				<span id="sospc-fab-badge" style="display:none">!</span>
+			</button>
+
+			<!-- Panneau principal -->
+			<div id="sospc-panel">
+
+				<!-- Header -->
+				<div id="sospc-header">
+					<div id="sospc-header-info">
+						<span id="sospc-header-title">Assistant SOS-PC</span>
+						<span id="sospc-header-sub">Diagnostic intelligent</span>
+					</div>
+					<button id="sospc-close" onclick="sospcToggle()" aria-label="Fermer">
+						<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+					</button>
+				</div>
+
+				<!-- Vue AVANT diagnostic -->
+				<div id="sospc-view-intro">
+					<div id="sospc-intro-body">
+						<p id="sospc-intro-title">Analysez votre PC gratuitement</p>
+						<p id="sospc-intro-desc">Notre IA détecte les problèmes de performance, les erreurs système et vous donne des conseils personnalisés.</p>
+
+						<div id="sospc-steps">
+							<div class="sospc-step">
+								<span class="sospc-step-n">1</span>
+								<span>Ouvrez le Terminal (<kbd>Win</kbd>+<kbd>X</kbd> → Terminal)</span>
+							</div>
+							<div class="sospc-step">
+								<span class="sospc-step-n">2</span>
+								<span>Copiez et collez cette commande :</span>
+							</div>
+						</div>
+
+						<div id="sospc-cmd-box">
+							<code id="sospc-cmd">irm https://sos-pc.click/diag.ps1 | iex</code>
+							<button id="sospc-copy-btn" onclick="sospcCopy()">Copier</button>
+						</div>
+
+						<div class="sospc-step" style="margin-top:8px">
+							<span class="sospc-step-n">3</span>
+							<span>La page se recharge automatiquement avec votre diagnostic</span>
+						</div>
+
+						<p id="sospc-privacy">🔒 Aucun fichier personnel collecté — uniquement les données techniques.</p>
+					</div>
+				</div>
+
+				<!-- Vue APRÈS diagnostic -->
+				<div id="sospc-view-diag" style="display:none">
+
+					<!-- Score -->
+					<div id="sospc-score-wrap">
+						<span id="sospc-score-lbl">Santé du PC</span>
+						<div id="sospc-score-track"><div id="sospc-score-fill"></div></div>
+						<span id="sospc-score-val">—</span>
+					</div>
+
+					<!-- Messages chat -->
+					<div id="sospc-messages"></div>
+
+					<!-- Suggestions rapides -->
+					<div id="sospc-suggestions"></div>
+
+					<!-- Input -->
+					<div id="sospc-input-wrap">
+						<input id="sospc-input" type="text" placeholder="Posez une question..." onkeydown="if(event.key==='Enter')sospcSend()" />
+						<button id="sospc-send" onclick="sospcSend()">
+							<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+						</button>
+					</div>
+				</div>
+
+			</div>
+		</div>
+
+		<style>
+		#sospc-widget {
+			position: fixed;
+			bottom: 24px;
+			right: 24px;
+			z-index: 9999;
+			display: flex;
+			flex-direction: column;
+			align-items: flex-end;
+			gap: 12px;
+			font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+		}
+
+		/* FAB */
+		#sospc-fab {
+			display: flex;
+			align-items: center;
+			gap: 8px;
+			background: rgb(var(--accent));
+			color: white;
+			border: none;
+			border-radius: 50px;
+			padding: 12px 20px;
+			font-size: 14px;
+			font-weight: 600;
+			cursor: pointer;
+			box-shadow: 0 4px 16px rgba(136,58,234,0.4);
+			transition: transform 0.2s, box-shadow 0.2s;
+			white-space: nowrap;
+		}
+		#sospc-fab:hover {
+			transform: translateY(-2px);
+			box-shadow: 0 6px 24px rgba(136,58,234,0.5);
+		}
+		#sospc-fab-badge {
+			background: #E24B4A;
+			color: white;
+			border-radius: 50%;
+			width: 18px;
+			height: 18px;
+			font-size: 11px;
+			font-weight: 700;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+		}
+
+		/* Panneau */
+		#sospc-panel {
+			width: 360px;
+			background: var(--card-bg-color);
+			border: 1px solid var(--border-color);
+			border-radius: 16px;
+			box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+			display: none;
+			flex-direction: column;
+			overflow: hidden;
+			max-height: 80vh;
+		}
+		#sospc-panel.open {
+			display: flex;
+		}
+
+		/* Header */
+		#sospc-header {
+			background: rgb(var(--accent));
+			padding: 14px 16px;
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			flex-shrink: 0;
+		}
+		#sospc-header-title {
+			display: block;
+			color: white;
+			font-size: 14px;
+			font-weight: 600;
+		}
+		#sospc-header-sub {
+			display: block;
+			color: rgba(255,255,255,0.75);
+			font-size: 11px;
+		}
+		#sospc-close {
+			background: none;
+			border: none;
+			color: white;
+			cursor: pointer;
+			opacity: 0.75;
+			padding: 4px;
+			border-radius: 6px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			transition: opacity 0.2s, background 0.2s;
+		}
+		#sospc-close:hover { opacity: 1; background: rgba(255,255,255,0.15); }
+
+		/* Vue intro */
+		#sospc-intro-body {
+			padding: 16px;
+			overflow-y: auto;
+		}
+		#sospc-intro-title {
+			font-size: 15px;
+			font-weight: 600;
+			color: var(--heading-color);
+			margin: 0 0 6px;
+		}
+		#sospc-intro-desc {
+			font-size: 13px;
+			color: var(--card-text-color);
+			margin: 0 0 14px;
+			line-height: 1.5;
+		}
+		#sospc-steps {
+			display: flex;
+			flex-direction: column;
+			gap: 8px;
+			margin-bottom: 12px;
+		}
+		.sospc-step {
+			display: flex;
+			align-items: flex-start;
+			gap: 10px;
+			font-size: 13px;
+			color: var(--card-text-color);
+		}
+		.sospc-step-n {
+			width: 22px;
+			height: 22px;
+			border-radius: 50%;
+			background: rgb(var(--accent));
+			color: white;
+			font-size: 11px;
+			font-weight: 700;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			flex-shrink: 0;
+		}
+		.sospc-step kbd {
+			background: var(--bg-color);
+			border: 1px solid var(--border-color);
+			border-radius: 4px;
+			padding: 1px 5px;
+			font-size: 11px;
+			font-family: inherit;
+			color: var(--text-color);
+		}
+
+		/* Commande */
+		#sospc-cmd-box {
+			background: #1a1a2e;
+			border-radius: 8px;
+			padding: 10px 12px;
+			display: flex;
+			align-items: center;
+			gap: 10px;
+			margin-bottom: 4px;
+		}
+		#sospc-cmd {
+			color: #a78bfa;
+			font-size: 12px;
+			font-family: 'Courier New', monospace;
+			flex: 1;
+			word-break: break-all;
+		}
+		#sospc-copy-btn {
+			background: rgba(136,58,234,0.3);
+			color: #c4b5fd;
+			border: 1px solid rgba(167,139,250,0.3);
+			border-radius: 6px;
+			padding: 5px 10px;
+			font-size: 12px;
+			cursor: pointer;
+			flex-shrink: 0;
+			transition: background 0.2s;
+			white-space: nowrap;
+		}
+		#sospc-copy-btn:hover { background: rgba(136,58,234,0.5); }
+		#sospc-copy-btn.copied { background: rgba(29,158,117,0.4); color: #6ee7b7; border-color: rgba(110,231,183,0.3); }
+
+		#sospc-privacy {
+			font-size: 11px;
+			color: var(--card-text-color);
+			opacity: 0.6;
+			text-align: center;
+			margin: 10px 0 0;
+		}
+
+		/* Score */
+		#sospc-score-wrap {
+			display: flex;
+			align-items: center;
+			gap: 10px;
+			padding: 10px 16px;
+			background: var(--bg-color);
+			border-bottom: 1px solid var(--border-color);
+			flex-shrink: 0;
+		}
+		#sospc-score-lbl { font-size: 12px; color: var(--card-text-color); flex-shrink: 0; }
+		#sospc-score-track { flex: 1; height: 6px; background: var(--border-color); border-radius: 3px; overflow: hidden; }
+		#sospc-score-fill { height: 100%; border-radius: 3px; width: 0%; transition: width 1.2s ease; }
+		#sospc-score-val { font-size: 13px; font-weight: 700; color: var(--heading-color); flex-shrink: 0; min-width: 40px; text-align: right; }
+
+		/* Messages */
+		#sospc-messages {
+			flex: 1;
+			overflow-y: auto;
+			padding: 12px;
+			display: flex;
+			flex-direction: column;
+			gap: 8px;
+			min-height: 100px;
+			max-height: 240px;
+		}
+		.sospc-msg {
+			max-width: 88%;
+			padding: 9px 12px;
+			border-radius: 12px;
+			font-size: 13px;
+			line-height: 1.5;
+		}
+		.sospc-msg.user {
+			background: rgb(var(--accent));
+			color: white;
+			align-self: flex-end;
+			border-bottom-right-radius: 3px;
+		}
+		.sospc-msg.bot {
+			background: var(--bg-color);
+			color: var(--text-color);
+			align-self: flex-start;
+			border-bottom-left-radius: 3px;
+			border: 1px solid var(--border-color);
+		}
+		.sospc-msg.typing { opacity: 0.6; font-style: italic; }
+
+		/* Suggestions */
+		#sospc-suggestions {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 6px;
+			padding: 0 12px 10px;
+		}
+		.sospc-suggestion {
+			background: rgba(var(--accent), 0.1);
+			color: rgb(var(--accent-dark));
+			border: 1px solid rgba(var(--accent), 0.25);
+			border-radius: 20px;
+			padding: 5px 12px;
+			font-size: 12px;
+			cursor: pointer;
+			transition: background 0.2s;
+			white-space: nowrap;
+		}
+		.sospc-suggestion:hover { background: rgba(var(--accent), 0.2); }
+
+		/* Input */
+		#sospc-input-wrap {
+			display: flex;
+			gap: 8px;
+			padding: 10px 12px;
+			border-top: 1px solid var(--border-color);
+			flex-shrink: 0;
+		}
+		#sospc-input {
+			flex: 1;
+			background: var(--bg-color);
+			border: 1px solid var(--border-color);
+			border-radius: 20px;
+			padding: 8px 14px;
+			font-size: 13px;
+			color: var(--text-color);
+			outline: none;
+			transition: border 0.2s;
+		}
+		#sospc-input:focus { border-color: rgb(var(--accent)); }
+		#sospc-send {
+			background: rgb(var(--accent));
+			color: white;
+			border: none;
+			border-radius: 50%;
+			width: 34px;
+			height: 34px;
+			cursor: pointer;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			flex-shrink: 0;
+			transition: background 0.2s, transform 0.1s;
+		}
+		#sospc-send:hover { background: rgb(var(--accent-dark)); }
+		#sospc-send:active { transform: scale(0.95); }
+		#sospc-send:disabled { background: var(--border-color); cursor: default; }
+
+		@media (max-width: 480px) {
+			#sospc-panel { width: calc(100vw - 32px); }
+			#sospc-widget { bottom: 16px; right: 16px; }
+			#sospc-fab-text { display: none; }
+			#sospc-fab { padding: 14px; border-radius: 50%; }
+		}
+		</style>
+
+		<script>
+		(function() {
+			let panelOpen = false;
+			let diagData = null;
+			let diagReport = null;
+			const history = [];
+
+			// Toggle panel
+			window.sospcToggle = function() {
+				panelOpen = !panelOpen;
+				const panel = document.getElementById('sospc-panel');
+				panel.classList.toggle('open', panelOpen);
+				document.getElementById('sospc-fab-badge').style.display = 'none';
+				if (panelOpen && diagData && !diagReport) {
+					sospcAnalyze();
+				}
+				if (panelOpen && diagData) {
+					setTimeout(() => {
+						const input = document.getElementById('sospc-input');
+						if (input) input.focus();
+					}, 200);
+				}
+			};
+
+			// Copier commande
+			window.sospcCopy = function() {
+				const cmd = document.getElementById('sospc-cmd').textContent;
+				navigator.clipboard.writeText(cmd).then(() => {
+					const btn = document.getElementById('sospc-copy-btn');
+					btn.textContent = 'Copié !';
+					btn.classList.add('copied');
+					setTimeout(() => { btn.textContent = 'Copier'; btn.classList.remove('copied'); }, 2500);
+				});
+			};
+
+			// Ajouter un message
+			function addMsg(role, text) {
+				const box = document.getElementById('sospc-messages');
+				const div = document.createElement('div');
+				div.className = 'sospc-msg ' + role;
+				div.textContent = text;
+				box.appendChild(div);
+				box.scrollTop = box.scrollHeight;
+				return div;
+			}
+
+			// Suggestions rapides
+			function showSuggestions(items) {
+				const wrap = document.getElementById('sospc-suggestions');
+				wrap.innerHTML = '';
+				items.forEach(text => {
+					const btn = document.createElement('button');
+					btn.className = 'sospc-suggestion';
+					btn.textContent = text;
+					btn.onclick = () => {
+						wrap.innerHTML = '';
+						document.getElementById('sospc-input').value = text;
+						sospcSend();
+					};
+					wrap.appendChild(btn);
+				});
+			}
+
+			// Envoyer un message
+			window.sospcSend = function() {
+				const input = document.getElementById('sospc-input');
+				const msg = input.value.trim();
+				if (!msg) return;
+				input.value = '';
+				document.getElementById('sospc-send').disabled = true;
+				document.getElementById('sospc-suggestions').innerHTML = '';
+
+				addMsg('user', msg);
+				history.push({ role: 'user', content: msg });
+
+				const typing = addMsg('bot typing', '...');
+
+				fetch('https://sos-pc-diagnostic.netlify.app/api/chat', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ messages: history, systemData: diagData, report: diagReport })
+				})
+				.then(r => r.json())
+				.then(json => {
+					typing.remove();
+					const reply = json.message || 'Désolé, une erreur est survenue.';
+					addMsg('bot', reply);
+					history.push({ role: 'assistant', content: reply });
+				})
+				.catch(() => {
+					typing.remove();
+					addMsg('bot', 'Erreur de connexion. Veuillez réessayer.');
+				})
+				.finally(() => {
+					document.getElementById('sospc-send').disabled = false;
+					input.focus();
+				});
+			};
+
+			// Analyser avec l'IA
+			function sospcAnalyze() {
+				const typing = addMsg('bot typing', 'Analyse de votre PC en cours...');
+
+				fetch('https://sos-pc-diagnostic.netlify.app/api/analyze', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ data: diagData, problem: '' })
+				})
+				.then(r => r.json())
+				.then(json => {
+					diagReport = json.report;
+					typing.remove();
+
+					// Score
+					const score = diagReport?.score || 50;
+					const fill = document.getElementById('sospc-score-fill');
+					fill.style.background = score >= 70 ? '#1D9E75' : score >= 40 ? '#BA7517' : '#E24B4A';
+					document.getElementById('sospc-score-val').textContent = score + '/100';
+					setTimeout(() => fill.style.width = score + '%', 100);
+
+					// Résumé
+					const summary = diagReport?.summary || 'Analyse terminée.';
+					addMsg('bot', summary);
+					history.push({ role: 'assistant', content: summary });
+
+					// Problèmes critiques
+					const crits = (diagReport?.issues || []).filter(i => i.level === 'critical');
+					if (crits.length) {
+						const msg = '⚠️ ' + crits.length + ' problème(s) critique(s) : ' + crits.map(i => i.title).join(', ') + '.';
+						addMsg('bot', msg);
+						history.push({ role: 'assistant', content: msg });
+					}
+
+					// Suggestions
+					showSuggestions(['Expliquer le problème principal', 'Comment améliorer les performances ?', 'Contacter SOS-PC']);
+				})
+				.catch(() => {
+					typing.remove();
+					addMsg('bot', 'Erreur lors de l\'analyse. Contactez-nous directement.');
+				});
+			}
+
+			// Init au chargement
+			document.addEventListener('DOMContentLoaded', function() {
+				const params = new URLSearchParams(window.location.search);
+				const encoded = params.get('diag');
+
+				if (encoded) {
+					// Nettoyer l'URL
+					window.history.replaceState({}, '', window.location.pathname + window.location.hash);
+
+					try { diagData = JSON.parse(atob(encoded)); } catch { return; }
+
+					// Passer en vue diagnostic
+					document.getElementById('sospc-view-intro').style.display = 'none';
+					document.getElementById('sospc-view-diag').style.display = 'flex';
+					document.getElementById('sospc-view-diag').style.flexDirection = 'column';
+					document.getElementById('sospc-header-sub').textContent = 'Analyse en cours...';
+
+					// Badge + ouvrir automatiquement
+					document.getElementById('sospc-fab-badge').style.display = 'flex';
+					document.getElementById('sospc-fab-text').textContent = 'Voir le diagnostic';
+
+					// Ouvrir le panel et lancer l'analyse
+					panelOpen = true;
+					document.getElementById('sospc-panel').classList.add('open');
+
+					// Scroll vers section diagnostic
+					const section = document.getElementById('diagnostic');
+					if (section) section.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+					sospcAnalyze();
+
+					// Header mis à jour après analyse
+					setTimeout(() => {
+						document.getElementById('sospc-header-sub').textContent = 'Diagnostic terminé';
+					}, 4000);
+				}
+			});
+		})();
+		</script>
+
 </body>
 </html>
 <style define:vars={{ maxNavbarHeight }} is:global>
