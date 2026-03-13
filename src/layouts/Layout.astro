@@ -399,7 +399,7 @@ const maxNavbarHeight = "80px"; // Adjusted navbar height
 				if (pollInterval) return;
 				pollInterval = setInterval(async () => {
 					try {
-						const r = await fetch(`/api/poll?s=${sessionId}`);
+						const r = await fetch(`https://sos-pc-diagnostic.netlify.app/api/poll?s=${sessionId}`);
 						const json = await r.json();
 						if (json.ready && json.data) {
 							stopPolling();
