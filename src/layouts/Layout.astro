@@ -114,20 +114,17 @@ const maxNavbarHeight = "80px"; // Adjusted navbar height
     </script>
 
 
-		<!-- ===== SOS-PC ASSISTANT FLOTTANT v5 ===== -->
+		<!-- ===== SOS-PC ASSISTANT FLOTTANT v6 ===== -->
 		<div id="sospc-widget" class="sospc-closed">
 
-			<!-- Contenu FAB (visible quand fermé) -->
 			<div id="sospc-fab-content" onclick="sospcToggle()">
 				<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
 				<span id="sospc-fab-text">Diagnostic PC</span>
 				<span id="sospc-fab-badge" style="display:none">!</span>
 			</div>
 
-			<!-- Contenu Panel (visible quand ouvert) -->
 			<div id="sospc-panel-content">
-
-				<div id="sospc-header">
+				<div id="sospc-header" id="sospc-drag-handle">
 					<div>
 						<span id="sospc-header-title">Assistant SOS-PC</span>
 						<span id="sospc-header-sub">Diagnostic intelligent</span>
@@ -143,7 +140,6 @@ const maxNavbarHeight = "80px"; // Adjusted navbar height
 					</div>
 				</div>
 
-				<!-- Vue attente -->
 				<div id="sospc-view-waiting">
 					<div id="sospc-waiting-body">
 						<p id="sospc-intro-title">Analysez votre PC gratuitement</p>
@@ -174,7 +170,6 @@ const maxNavbarHeight = "80px"; // Adjusted navbar height
 					</div>
 				</div>
 
-				<!-- Vue diagnostic -->
 				<div id="sospc-view-diag" style="display:none;flex-direction:column;">
 					<div id="sospc-score-wrap">
 						<span id="sospc-score-lbl">Santé du PC</span>
@@ -190,7 +185,6 @@ const maxNavbarHeight = "80px"; // Adjusted navbar height
 						</button>
 					</div>
 				</div>
-
 			</div>
 		</div>
 
@@ -206,16 +200,19 @@ const maxNavbarHeight = "80px"; // Adjusted navbar height
 			transform-origin: bottom right;
 			transition:
 				width 0.38s cubic-bezier(0.34, 1.3, 0.64, 1),
-				height 0.38s cubic-bezier(0.34, 1.3, 0.64, 1),
 				border-radius 0.38s cubic-bezier(0.34, 1.3, 0.64, 1),
 				box-shadow 0.38s ease,
 				background 0.2s ease;
 		}
+		#sospc-widget.sospc-dragging {
+			transition: none !important;
+			cursor: grabbing !important;
+			user-select: none;
+		}
 
-		/* === ÉTAT FERMÉ (FAB) === */
+		/* FERMÉ */
 		#sospc-widget.sospc-closed {
 			width: auto;
-			height: auto;
 			border-radius: 50px;
 			background: rgb(var(--accent));
 			box-shadow: 0 4px 16px rgba(136,58,234,0.4);
@@ -226,8 +223,11 @@ const maxNavbarHeight = "80px"; // Adjusted navbar height
 			transform: translateY(-2px);
 			box-shadow: 0 6px 24px rgba(136,58,234,0.5);
 		}
+		#sospc-widget.sospc-dragging.sospc-closed:hover {
+			transform: none;
+		}
 
-		/* === ÉTAT OUVERT (PANEL) === */
+		/* OUVERT */
 		#sospc-widget.sospc-open {
 			width: 360px;
 			border-radius: 16px;
@@ -238,55 +238,35 @@ const maxNavbarHeight = "80px"; // Adjusted navbar height
 			cursor: default;
 		}
 
-		/* === FAB CONTENT === */
+		/* FAB */
 		#sospc-fab-content {
-			display: flex;
-			align-items: center;
-			gap: 8px;
-			padding: 12px 20px;
-			color: white;
-			font-size: 14px;
-			font-weight: 600;
-			white-space: nowrap;
-			transition: opacity 0.15s ease;
-			cursor: pointer;
-			user-select: none;
+			display: flex; align-items: center; gap: 8px;
+			padding: 12px 20px; color: white;
+			font-size: 14px; font-weight: 600;
+			white-space: nowrap; cursor: pointer; user-select: none;
 		}
-		#sospc-widget.sospc-open #sospc-fab-content {
-			display: none;
-		}
+		#sospc-widget.sospc-open #sospc-fab-content { display: none; }
 		#sospc-fab-badge {
-			background: #E24B4A;
-			color: white;
-			border-radius: 50%;
-			width: 18px; height: 18px;
-			font-size: 11px; font-weight: 700;
+			background: #E24B4A; color: white; border-radius: 50%;
+			width: 18px; height: 18px; font-size: 11px; font-weight: 700;
 			display: flex; align-items: center; justify-content: center;
 		}
 
-		/* === PANEL CONTENT === */
+		/* PANEL */
 		#sospc-panel-content {
-			display: none;
-			flex-direction: column;
-			opacity: 0;
+			display: none; flex-direction: column; opacity: 0;
 			transition: opacity 0.2s ease 0.15s;
-			max-height: 80vh;
-			overflow: hidden;
+			max-height: 80vh; overflow: hidden;
 		}
-		#sospc-widget.sospc-open #sospc-panel-content {
-			display: flex;
-			opacity: 1;
-		}
+		#sospc-widget.sospc-open #sospc-panel-content { display: flex; opacity: 1; }
 
-		/* Header */
+		/* Header — drag handle */
 		#sospc-header {
-			background: rgb(var(--accent));
-			padding: 12px 16px;
-			display: flex;
-			justify-content: space-between;
-			align-items: center;
-			flex-shrink: 0;
+			background: rgb(var(--accent)); padding: 12px 16px;
+			display: flex; justify-content: space-between; align-items: center;
+			flex-shrink: 0; cursor: grab; user-select: none;
 		}
+		#sospc-header:active { cursor: grabbing; }
 		#sospc-header-title { display: block; color: white; font-size: 14px; font-weight: 600; }
 		#sospc-header-sub { display: block; color: rgba(255,255,255,0.75); font-size: 11px; }
 
@@ -300,7 +280,6 @@ const maxNavbarHeight = "80px"; // Adjusted navbar height
 		#sospc-close-btn { padding: 4px; }
 		#sospc-close-btn:hover, #sospc-reset-btn:hover { opacity: 1; background: rgba(255,255,255,0.15); }
 
-		/* Vue attente */
 		#sospc-waiting-body { padding: 16px; overflow-y: auto; }
 		#sospc-intro-title { font-size: 15px; font-weight: 600; color: var(--heading-color); margin: 0 0 6px; }
 		#sospc-intro-desc { font-size: 13px; color: var(--card-text-color); margin: 0 0 14px; line-height: 1.5; }
@@ -346,7 +325,6 @@ const maxNavbarHeight = "80px"; // Adjusted navbar height
 		}
 		#sospc-privacy { font-size: 11px; color: var(--card-text-color); opacity: 0.6; text-align: center; margin: 10px 0 0; }
 
-		/* Vue diagnostic */
 		#sospc-score-wrap {
 			display: flex; align-items: center; gap: 10px; padding: 10px 16px;
 			background: var(--bg-color); border-bottom: 1px solid var(--border-color); flex-shrink: 0;
@@ -397,13 +375,134 @@ const maxNavbarHeight = "80px"; // Adjusted navbar height
 		<script>
 		(function() {
 			const STORAGE_KEY = 'sospc_diagnostic_v1';
+			const POS_KEY = 'sospc_position_v1';
 			let isOpen = false;
 			let diagData = null;
 			let diagReport = null;
 			let chatHistory = [];
 			let sessionId = null;
 			let pollInterval = null;
+			let isDragging = false;
+			let dragOffsetX = 0, dragOffsetY = 0;
 
+			// ---- Audio : soft pop via Web Audio API ----
+			function playPop() {
+				try {
+					const ctx = new (window.AudioContext || window.webkitAudioContext)();
+					const osc = ctx.createOscillator();
+					const gain = ctx.createGain();
+					osc.connect(gain);
+					gain.connect(ctx.destination);
+					osc.type = 'sine';
+					osc.frequency.setValueAtTime(880, ctx.currentTime);
+					osc.frequency.exponentialRampToValueAtTime(440, ctx.currentTime + 0.12);
+					gain.gain.setValueAtTime(0, ctx.currentTime);
+					gain.gain.linearRampToValueAtTime(0.18, ctx.currentTime + 0.01);
+					gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
+					osc.start(ctx.currentTime);
+					osc.stop(ctx.currentTime + 0.25);
+					// Deuxième harmonique pour adoucir
+					const osc2 = ctx.createOscillator();
+					const gain2 = ctx.createGain();
+					osc2.connect(gain2);
+					gain2.connect(ctx.destination);
+					osc2.type = 'sine';
+					osc2.frequency.setValueAtTime(1320, ctx.currentTime);
+					osc2.frequency.exponentialRampToValueAtTime(660, ctx.currentTime + 0.1);
+					gain2.gain.setValueAtTime(0, ctx.currentTime);
+					gain2.gain.linearRampToValueAtTime(0.08, ctx.currentTime + 0.01);
+					gain2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.18);
+					osc2.start(ctx.currentTime);
+					osc2.stop(ctx.currentTime + 0.18);
+				} catch(e) {}
+			}
+
+			// ---- Drag ----
+			function getWidgetPos() {
+				const w = document.getElementById('sospc-widget');
+				const rect = w.getBoundingClientRect();
+				return { x: rect.left, y: rect.top, w: rect.width, h: rect.height };
+			}
+
+			function applyPos(x, y) {
+				const w = document.getElementById('sospc-widget');
+				// Clamp dans la fenêtre
+				const rect = w.getBoundingClientRect();
+				const maxX = window.innerWidth - rect.width - 4;
+				const maxY = window.innerHeight - rect.height - 4;
+				x = Math.max(4, Math.min(x, maxX));
+				y = Math.max(4, Math.min(y, maxY));
+				w.style.right = 'auto';
+				w.style.bottom = 'auto';
+				w.style.left = x + 'px';
+				w.style.top = y + 'px';
+				try { localStorage.setItem(POS_KEY, JSON.stringify({ x, y })); } catch(e) {}
+			}
+
+			function onDragStart(clientX, clientY) {
+				const pos = getWidgetPos();
+				dragOffsetX = clientX - pos.x;
+				dragOffsetY = clientY - pos.y;
+				isDragging = true;
+				document.getElementById('sospc-widget').classList.add('sospc-dragging');
+			}
+
+			function onDragMove(clientX, clientY) {
+				if (!isDragging) return;
+				applyPos(clientX - dragOffsetX, clientY - dragOffsetY);
+			}
+
+			function onDragEnd() {
+				if (!isDragging) return;
+				isDragging = false;
+				document.getElementById('sospc-widget').classList.remove('sospc-dragging');
+			}
+
+			// Mouse drag sur le header (panel ouvert) + FAB
+			function initDrag() {
+				const header = document.getElementById('sospc-header');
+				const fab = document.getElementById('sospc-fab-content');
+
+				// Mouse
+				[header, fab].forEach(el => {
+					el.addEventListener('mousedown', e => {
+						if (e.target.closest('button')) return;
+						e.preventDefault();
+						onDragStart(e.clientX, e.clientY);
+					});
+				});
+				document.addEventListener('mousemove', e => onDragMove(e.clientX, e.clientY));
+				document.addEventListener('mouseup', onDragEnd);
+
+				// Touch
+				[header, fab].forEach(el => {
+					el.addEventListener('touchstart', e => {
+						if (e.target.closest('button')) return;
+						const t = e.touches[0];
+						onDragStart(t.clientX, t.clientY);
+					}, { passive: true });
+				});
+				document.addEventListener('touchmove', e => {
+					if (!isDragging) return;
+					e.preventDefault();
+					const t = e.touches[0];
+					onDragMove(t.clientX, t.clientY);
+				}, { passive: false });
+				document.addEventListener('touchend', onDragEnd);
+			}
+
+			function restorePos() {
+				try {
+					const saved = localStorage.getItem(POS_KEY);
+					if (!saved) return;
+					const { x, y } = JSON.parse(saved);
+					const w = document.getElementById('sospc-widget');
+					w.style.right = 'auto'; w.style.bottom = 'auto';
+					w.style.left = x + 'px'; w.style.top = y + 'px';
+				} catch(e) {}
+			}
+
+			// ---- Storage ----
 			function save() {
 				try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ diagData, diagReport, chatHistory, savedAt: Date.now() })); } catch(e) {}
 			}
@@ -413,14 +512,12 @@ const maxNavbarHeight = "80px"; // Adjusted navbar height
 			function clear() {
 				try { localStorage.removeItem(STORAGE_KEY); } catch(e) {}
 			}
-			function genId() {
-				return Math.random().toString(36).slice(2, 10).toUpperCase();
-			}
-			function buildCmd(sid) {
-				return `$s='${sid}'; irm https://sos-pc.click/diag.ps1 | iex`;
-			}
+			function genId() { return Math.random().toString(36).slice(2, 10).toUpperCase(); }
+			function buildCmd(sid) { return `$s='${sid}'; irm https://sos-pc.click/diag.ps1 | iex`; }
 
+			// ---- Toggle ----
 			window.sospcToggle = function() {
+				if (isDragging) return;
 				const widget = document.getElementById('sospc-widget');
 				isOpen = !isOpen;
 				if (isOpen) {
@@ -460,6 +557,7 @@ const maxNavbarHeight = "80px"; // Adjusted navbar height
 				startPolling();
 			};
 
+			// ---- Polling ----
 			function startPolling() {
 				if (pollInterval) return;
 				pollInterval = setInterval(async () => {
@@ -470,11 +568,14 @@ const maxNavbarHeight = "80px"; // Adjusted navbar height
 							stopPolling();
 							diagData = json.data;
 							document.getElementById('sospc-waiting-indicator').style.display = 'none';
-							// Ouvrir automatiquement si fermé
+							// Son de notification
+							playPop();
+							// Ouvrir si fermé
 							if (!isOpen) {
 								isOpen = true;
-								document.getElementById('sospc-widget').classList.remove('sospc-closed');
-								document.getElementById('sospc-widget').classList.add('sospc-open');
+								const widget = document.getElementById('sospc-widget');
+								widget.classList.remove('sospc-closed');
+								widget.classList.add('sospc-open');
 							}
 							runAnalysis();
 						}
@@ -550,25 +651,19 @@ const maxNavbarHeight = "80px"; // Adjusted navbar height
 					setScore(score);
 					document.getElementById('sospc-header-sub').textContent = 'Diagnostic terminé';
 					document.getElementById('sospc-fab-text').textContent = 'Voir le diagnostic';
-
 					const summary = diagReport?.summary || 'Analyse terminée.';
 					addMsg('bot', summary);
 					chatHistory.push({ role: 'assistant', content: summary });
-
 					const crits = (diagReport?.issues || []).filter(i => i.level === 'critical');
 					if (crits.length) {
 						const msg = '⚠️ ' + crits.length + ' problème(s) critique(s) : ' + crits.map(i => i.title).join(', ') + '.';
-						addMsg('bot', msg);
-						chatHistory.push({ role: 'assistant', content: msg });
+						addMsg('bot', msg); chatHistory.push({ role: 'assistant', content: msg });
 					}
-
 					const hasIssues = (diagReport?.issues || []).some(i => i.level !== 'ok');
 					if (hasIssues) {
 						const cta = 'Nos techniciens peuvent résoudre ces problèmes. Voulez-vous être contacté ?';
-						addMsg('bot', cta);
-						chatHistory.push({ role: 'assistant', content: cta });
+						addMsg('bot', cta); chatHistory.push({ role: 'assistant', content: cta });
 					}
-
 					showSuggestions(['Expliquer le problème principal', 'Améliorer les performances', 'Contacter SOS-PC']);
 					save();
 				})
@@ -589,7 +684,6 @@ const maxNavbarHeight = "80px"; // Adjusted navbar height
 				addMsg('user', msg);
 				chatHistory.push({ role: 'user', content: msg });
 				const typing = addMsg('bot typing', '...');
-
 				fetch('https://sos-pc-diagnostic.netlify.app/api/chat', {
 					method: 'POST',
 					headers: { 'Content-Type': 'application/json' },
@@ -608,6 +702,8 @@ const maxNavbarHeight = "80px"; // Adjusted navbar height
 			};
 
 			document.addEventListener('DOMContentLoaded', function() {
+				initDrag();
+				restorePos();
 				const saved = load();
 				if (saved && saved.diagData) {
 					diagData = saved.diagData;
