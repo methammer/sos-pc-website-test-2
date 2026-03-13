@@ -1,0 +1,6 @@
+
+[[redirects]]
+  from = "/diag.ps1"
+  to = "https://sos-pc-diagnostic.netlify.app/diag.ps1"
+  status = 200
+  force = true
