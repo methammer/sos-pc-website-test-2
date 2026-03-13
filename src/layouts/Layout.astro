@@ -114,25 +114,28 @@ const maxNavbarHeight = "80px"; // Adjusted navbar height
     </script>
 
 
-		<!-- ===== SOS-PC ASSISTANT FLOTTANT v4 ===== -->
-		<div id="sospc-widget">
-			<button id="sospc-fab" onclick="sospcToggle()" aria-label="Assistant SOS-PC">
-				<span>
-					<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-				</span>
+		<!-- ===== SOS-PC ASSISTANT FLOTTANT v5 ===== -->
+		<div id="sospc-widget" class="sospc-closed">
+
+			<!-- Contenu FAB (visible quand fermé) -->
+			<div id="sospc-fab-content" onclick="sospcToggle()">
+				<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
 				<span id="sospc-fab-text">Diagnostic PC</span>
 				<span id="sospc-fab-badge" style="display:none">!</span>
-			</button>
+			</div>
 
-			<div id="sospc-panel">
+			<!-- Contenu Panel (visible quand ouvert) -->
+			<div id="sospc-panel-content">
+
 				<div id="sospc-header">
 					<div>
 						<span id="sospc-header-title">Assistant SOS-PC</span>
 						<span id="sospc-header-sub">Diagnostic intelligent</span>
 					</div>
 					<div style="display:flex;gap:6px;align-items:center;">
-						<button id="sospc-reset-btn" onclick="sospcReset()" title="Nouveau diagnostic">
-							<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg>
+						<button id="sospc-reset-btn" onclick="sospcReset()" title="Nouveau scan">
+							<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg>
+							Nouveau scan
 						</button>
 						<button id="sospc-close-btn" onclick="sospcToggle()" aria-label="Fermer">
 							<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -140,12 +143,11 @@ const maxNavbarHeight = "80px"; // Adjusted navbar height
 					</div>
 				</div>
 
-				<!-- Vue : en attente du script -->
+				<!-- Vue attente -->
 				<div id="sospc-view-waiting">
 					<div id="sospc-waiting-body">
 						<p id="sospc-intro-title">Analysez votre PC gratuitement</p>
 						<p id="sospc-intro-desc">Notre IA détecte les problèmes de performance, les erreurs système et vous donne des conseils personnalisés.</p>
-
 						<div id="sospc-steps">
 							<div class="sospc-step">
 								<span class="sospc-step-n">1</span>
@@ -156,27 +158,23 @@ const maxNavbarHeight = "80px"; // Adjusted navbar height
 								<span>Copiez et collez cette commande :</span>
 							</div>
 						</div>
-
 						<div id="sospc-cmd-box">
 							<code id="sospc-cmd">chargement...</code>
 							<button id="sospc-copy-btn" onclick="sospcCopy()">Copier</button>
 						</div>
-
 						<div class="sospc-step">
 							<span class="sospc-step-n">3</span>
 							<span>Restez sur cette page — le diagnostic apparaît automatiquement ici !</span>
 						</div>
-
 						<div id="sospc-waiting-indicator" style="display:none;">
 							<div id="sospc-pulse"></div>
 							<span>En attente des données de votre PC...</span>
 						</div>
-
 						<p id="sospc-privacy">🔒 Aucun fichier personnel collecté — uniquement les données techniques.</p>
 					</div>
 				</div>
 
-				<!-- Vue : diagnostic + chat -->
+				<!-- Vue diagnostic -->
 				<div id="sospc-view-diag" style="display:none;flex-direction:column;">
 					<div id="sospc-score-wrap">
 						<span id="sospc-score-lbl">Santé du PC</span>
@@ -192,48 +190,114 @@ const maxNavbarHeight = "80px"; // Adjusted navbar height
 						</button>
 					</div>
 				</div>
+
 			</div>
 		</div>
 
 		<style>
-		body.cover-active #sospc-widget { display: none !important; }
+		body.cover-active #sospc-widget { opacity: 0; pointer-events: none; }
 
 		#sospc-widget {
-			position: fixed; bottom: 24px; right: 24px; z-index: 9999;
-			display: flex; flex-direction: column; align-items: flex-end; gap: 12px;
+			position: fixed;
+			bottom: 24px;
+			right: 24px;
+			z-index: 9999;
 			font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+			transform-origin: bottom right;
+			transition:
+				width 0.38s cubic-bezier(0.34, 1.3, 0.64, 1),
+				height 0.38s cubic-bezier(0.34, 1.3, 0.64, 1),
+				border-radius 0.38s cubic-bezier(0.34, 1.3, 0.64, 1),
+				box-shadow 0.38s ease,
+				background 0.2s ease;
 		}
-		#sospc-fab {
-			display: flex; align-items: center; gap: 8px;
-			background: rgb(var(--accent)); color: white; border: none;
-			border-radius: 50px; padding: 12px 20px; font-size: 14px; font-weight: 600;
-			cursor: pointer; box-shadow: 0 4px 16px rgba(136,58,234,0.4);
-			transition: transform 0.2s, box-shadow 0.2s; white-space: nowrap;
+
+		/* === ÉTAT FERMÉ (FAB) === */
+		#sospc-widget.sospc-closed {
+			width: auto;
+			height: auto;
+			border-radius: 50px;
+			background: rgb(var(--accent));
+			box-shadow: 0 4px 16px rgba(136,58,234,0.4);
+			cursor: pointer;
+			overflow: hidden;
 		}
-		#sospc-fab:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(136,58,234,0.5); }
+		#sospc-widget.sospc-closed:hover {
+			transform: translateY(-2px);
+			box-shadow: 0 6px 24px rgba(136,58,234,0.5);
+		}
+
+		/* === ÉTAT OUVERT (PANEL) === */
+		#sospc-widget.sospc-open {
+			width: 360px;
+			border-radius: 16px;
+			background: var(--card-bg-color);
+			border: 1px solid var(--border-color);
+			box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+			overflow: hidden;
+			cursor: default;
+		}
+
+		/* === FAB CONTENT === */
+		#sospc-fab-content {
+			display: flex;
+			align-items: center;
+			gap: 8px;
+			padding: 12px 20px;
+			color: white;
+			font-size: 14px;
+			font-weight: 600;
+			white-space: nowrap;
+			transition: opacity 0.15s ease;
+			cursor: pointer;
+			user-select: none;
+		}
+		#sospc-widget.sospc-open #sospc-fab-content {
+			display: none;
+		}
 		#sospc-fab-badge {
-			background: #E24B4A; color: white; border-radius: 50%;
-			width: 18px; height: 18px; font-size: 11px; font-weight: 700;
+			background: #E24B4A;
+			color: white;
+			border-radius: 50%;
+			width: 18px; height: 18px;
+			font-size: 11px; font-weight: 700;
 			display: flex; align-items: center; justify-content: center;
 		}
-		#sospc-panel {
-			width: 360px; background: var(--card-bg-color);
-			border: 1px solid var(--border-color); border-radius: 16px;
-			box-shadow: 0 8px 40px rgba(0,0,0,0.18); display: none;
-			flex-direction: column; overflow: hidden; max-height: 80vh;
+
+		/* === PANEL CONTENT === */
+		#sospc-panel-content {
+			display: none;
+			flex-direction: column;
+			opacity: 0;
+			transition: opacity 0.2s ease 0.15s;
+			max-height: 80vh;
+			overflow: hidden;
 		}
-		#sospc-panel.open { display: flex; }
+		#sospc-widget.sospc-open #sospc-panel-content {
+			display: flex;
+			opacity: 1;
+		}
+
+		/* Header */
 		#sospc-header {
-			background: rgb(var(--accent)); padding: 12px 16px;
-			display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;
+			background: rgb(var(--accent));
+			padding: 12px 16px;
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			flex-shrink: 0;
 		}
 		#sospc-header-title { display: block; color: white; font-size: 14px; font-weight: 600; }
 		#sospc-header-sub { display: block; color: rgba(255,255,255,0.75); font-size: 11px; }
+
 		#sospc-close-btn, #sospc-reset-btn {
-			background: none; border: none; color: white; cursor: pointer; opacity: 0.75;
-			padding: 4px; border-radius: 6px; display: flex; align-items: center; justify-content: center;
+			background: none; border: none; color: white; cursor: pointer;
+			opacity: 0.75; padding: 4px 8px; border-radius: 6px;
+			display: flex; align-items: center; gap: 5px;
+			font-size: 12px; font-family: inherit;
 			transition: opacity 0.2s, background 0.2s;
 		}
+		#sospc-close-btn { padding: 4px; }
 		#sospc-close-btn:hover, #sospc-reset-btn:hover { opacity: 1; background: rgba(255,255,255,0.15); }
 
 		/* Vue attente */
@@ -243,16 +307,19 @@ const maxNavbarHeight = "80px"; // Adjusted navbar height
 		#sospc-steps { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
 		.sospc-step { display: flex; align-items: flex-start; gap: 10px; font-size: 13px; color: var(--card-text-color); }
 		.sospc-step-n {
-			width: 22px; height: 22px; border-radius: 50%; background: rgb(var(--accent)); color: white;
-			font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+			width: 22px; height: 22px; border-radius: 50%;
+			background: rgb(var(--accent)); color: white;
+			font-size: 11px; font-weight: 700;
+			display: flex; align-items: center; justify-content: center; flex-shrink: 0;
 		}
 		.sospc-step kbd {
 			background: var(--bg-color); border: 1px solid var(--border-color);
-			border-radius: 4px; padding: 1px 5px; font-size: 11px; font-family: inherit; color: var(--text-color);
+			border-radius: 4px; padding: 1px 5px; font-size: 11px;
+			font-family: inherit; color: var(--text-color);
 		}
 		#sospc-cmd-box {
-			background: #1a1a2e; border-radius: 8px; padding: 10px 12px;
-			display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
+			background: #1a1a2e; border-radius: 8px;
+			padding: 10px 12px; display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
 		}
 		#sospc-cmd { color: #a78bfa; font-size: 12px; font-family: 'Courier New', monospace; flex: 1; word-break: break-all; }
 		#sospc-copy-btn {
@@ -262,15 +329,16 @@ const maxNavbarHeight = "80px"; // Adjusted navbar height
 		}
 		#sospc-copy-btn:hover { background: rgba(136,58,234,0.5); }
 		#sospc-copy-btn.copied { background: rgba(29,158,117,0.4); color: #6ee7b7; border-color: rgba(110,231,183,0.3); }
-
 		#sospc-waiting-indicator {
 			display: flex; align-items: center; gap: 10px;
 			background: rgba(var(--accent), 0.08); border: 1px solid rgba(var(--accent), 0.2);
-			border-radius: 8px; padding: 10px 14px; margin: 10px 0; font-size: 13px; color: var(--card-text-color);
+			border-radius: 8px; padding: 10px 14px; margin: 10px 0;
+			font-size: 13px; color: var(--card-text-color);
 		}
 		#sospc-pulse {
-			width: 10px; height: 10px; border-radius: 50%; background: rgb(var(--accent));
-			flex-shrink: 0; animation: sospc-pulse 1.4s ease-in-out infinite;
+			width: 10px; height: 10px; border-radius: 50%;
+			background: rgb(var(--accent)); flex-shrink: 0;
+			animation: sospc-pulse 1.4s ease-in-out infinite;
 		}
 		@keyframes sospc-pulse {
 			0%, 100% { opacity: 1; transform: scale(1); }
@@ -288,8 +356,9 @@ const maxNavbarHeight = "80px"; // Adjusted navbar height
 		#sospc-score-fill { height: 100%; border-radius: 3px; width: 0%; transition: width 1.2s ease; }
 		#sospc-score-val { font-size: 13px; font-weight: 700; color: var(--heading-color); flex-shrink: 0; min-width: 40px; text-align: right; }
 		#sospc-messages {
-			flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column;
-			gap: 8px; min-height: 100px; max-height: 260px;
+			flex: 1; overflow-y: auto; padding: 12px;
+			display: flex; flex-direction: column; gap: 8px;
+			min-height: 100px; max-height: 260px;
 		}
 		.sospc-msg { max-width: 88%; padding: 9px 12px; border-radius: 12px; font-size: 13px; line-height: 1.5; }
 		.sospc-msg.user { background: rgb(var(--accent)); color: white; align-self: flex-end; border-bottom-right-radius: 3px; }
@@ -305,37 +374,36 @@ const maxNavbarHeight = "80px"; // Adjusted navbar height
 		#sospc-input-wrap { display: flex; gap: 8px; padding: 10px 12px; border-top: 1px solid var(--border-color); flex-shrink: 0; }
 		#sospc-input {
 			flex: 1; background: var(--bg-color); border: 1px solid var(--border-color);
-			border-radius: 20px; padding: 8px 14px; font-size: 13px; color: var(--text-color); outline: none; transition: border 0.2s;
+			border-radius: 20px; padding: 8px 14px; font-size: 13px; color: var(--text-color);
+			outline: none; transition: border 0.2s;
 		}
 		#sospc-input:focus { border-color: rgb(var(--accent)); }
 		#sospc-send {
-			background: rgb(var(--accent)); color: white; border: none; border-radius: 50%;
-			width: 34px; height: 34px; cursor: pointer; display: flex; align-items: center;
-			justify-content: center; flex-shrink: 0; transition: background 0.2s, transform 0.1s;
+			background: rgb(var(--accent)); color: white; border: none;
+			border-radius: 50%; width: 34px; height: 34px; cursor: pointer;
+			display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+			transition: background 0.2s, transform 0.1s;
 		}
 		#sospc-send:hover { background: rgb(var(--accent-dark)); }
 		#sospc-send:active { transform: scale(0.95); }
 		#sospc-send:disabled { background: var(--border-color); cursor: default; }
 
 		@media (max-width: 480px) {
-			#sospc-panel { width: calc(100vw - 32px); }
+			#sospc-widget.sospc-open { width: calc(100vw - 32px); }
 			#sospc-widget { bottom: 16px; right: 16px; }
-			#sospc-fab-text { display: none; }
-			#sospc-fab { padding: 14px; border-radius: 50%; }
 		}
 		</style>
 
 		<script>
 		(function() {
 			const STORAGE_KEY = 'sospc_diagnostic_v1';
-			let panelOpen = false;
+			let isOpen = false;
 			let diagData = null;
 			let diagReport = null;
 			let chatHistory = [];
 			let sessionId = null;
 			let pollInterval = null;
 
-			// ---- Storage ----
 			function save() {
 				try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ diagData, diagReport, chatHistory, savedAt: Date.now() })); } catch(e) {}
 			}
@@ -345,46 +413,43 @@ const maxNavbarHeight = "80px"; // Adjusted navbar height
 			function clear() {
 				try { localStorage.removeItem(STORAGE_KEY); } catch(e) {}
 			}
-
-			// ---- Session ID ----
 			function genId() {
 				return Math.random().toString(36).slice(2, 10).toUpperCase();
 			}
-
-			// ---- Commande ----
 			function buildCmd(sid) {
 				return `$s='${sid}'; irm https://sos-pc.click/diag.ps1 | iex`;
 			}
 
-			// ---- Toggle ----
 			window.sospcToggle = function() {
-				panelOpen = !panelOpen;
-				document.getElementById('sospc-panel').classList.toggle('open', panelOpen);
+				const widget = document.getElementById('sospc-widget');
+				isOpen = !isOpen;
+				if (isOpen) {
+					widget.classList.remove('sospc-closed');
+					widget.classList.add('sospc-open');
+					if (!diagData && !pollInterval) startPolling();
+					if (diagData) setTimeout(() => { const i = document.getElementById('sospc-input'); if(i) i.focus(); }, 300);
+				} else {
+					widget.classList.remove('sospc-open');
+					widget.classList.add('sospc-closed');
+				}
 				document.getElementById('sospc-fab-badge').style.display = 'none';
-				if (panelOpen && !diagData && !pollInterval) startPolling();
-				if (panelOpen && diagData) setTimeout(() => { const i = document.getElementById('sospc-input'); if(i) i.focus(); }, 200);
 			};
 
-			// ---- Copier ----
 			window.sospcCopy = function() {
 				navigator.clipboard.writeText(document.getElementById('sospc-cmd').textContent).then(() => {
 					const btn = document.getElementById('sospc-copy-btn');
 					btn.textContent = 'Copié !'; btn.classList.add('copied');
-					// Afficher indicateur d'attente
 					document.getElementById('sospc-waiting-indicator').style.display = 'flex';
 					setTimeout(() => { btn.textContent = 'Copier'; btn.classList.remove('copied'); }, 2500);
 				});
 			};
 
-			// ---- Reset ----
 			window.sospcReset = function() {
-				if (!confirm('Relancer un nouveau diagnostic ?')) return;
+				if (!confirm('Lancer un nouveau scan ?')) return;
 				stopPolling(); clear();
 				diagData = null; diagReport = null; chatHistory = [];
-				// Nouveau session ID
 				sessionId = genId();
 				document.getElementById('sospc-cmd').textContent = buildCmd(sessionId);
-				// Revenir vue attente
 				document.getElementById('sospc-view-diag').style.display = 'none';
 				document.getElementById('sospc-view-waiting').style.display = 'block';
 				document.getElementById('sospc-waiting-indicator').style.display = 'none';
@@ -392,9 +457,9 @@ const maxNavbarHeight = "80px"; // Adjusted navbar height
 				document.getElementById('sospc-fab-text').textContent = 'Diagnostic PC';
 				document.getElementById('sospc-messages').innerHTML = '';
 				document.getElementById('sospc-suggestions').innerHTML = '';
+				startPolling();
 			};
 
-			// ---- Polling ----
 			function startPolling() {
 				if (pollInterval) return;
 				pollInterval = setInterval(async () => {
@@ -405,6 +470,12 @@ const maxNavbarHeight = "80px"; // Adjusted navbar height
 							stopPolling();
 							diagData = json.data;
 							document.getElementById('sospc-waiting-indicator').style.display = 'none';
+							// Ouvrir automatiquement si fermé
+							if (!isOpen) {
+								isOpen = true;
+								document.getElementById('sospc-widget').classList.remove('sospc-closed');
+								document.getElementById('sospc-widget').classList.add('sospc-open');
+							}
 							runAnalysis();
 						}
 					} catch(e) {}
@@ -415,14 +486,12 @@ const maxNavbarHeight = "80px"; // Adjusted navbar height
 				if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
 			}
 
-			// ---- Switch vues ----
 			function showDiagView() {
 				document.getElementById('sospc-view-waiting').style.display = 'none';
 				const v = document.getElementById('sospc-view-diag');
 				v.style.display = 'flex'; v.style.flexDirection = 'column';
 			}
 
-			// ---- Messages ----
 			function addMsg(role, text) {
 				const box = document.getElementById('sospc-messages');
 				const div = document.createElement('div');
@@ -463,15 +532,9 @@ const maxNavbarHeight = "80px"; // Adjusted navbar height
 				});
 			}
 
-			// ---- Analyse IA ----
 			function runAnalysis() {
 				showDiagView();
 				document.getElementById('sospc-header-sub').textContent = 'Analyse en cours...';
-				// Ouvrir le panel si fermé
-				if (!panelOpen) {
-					panelOpen = true;
-					document.getElementById('sospc-panel').classList.add('open');
-				}
 				const typing = addMsg('bot typing', 'Analyse de votre PC en cours...');
 
 				fetch('https://sos-pc-diagnostic.netlify.app/api/analyze', {
@@ -499,10 +562,9 @@ const maxNavbarHeight = "80px"; // Adjusted navbar height
 						chatHistory.push({ role: 'assistant', content: msg });
 					}
 
-					// Proposer services SOS-PC si problèmes détectés
 					const hasIssues = (diagReport?.issues || []).some(i => i.level !== 'ok');
 					if (hasIssues) {
-						const cta = 'Nos techniciens peuvent résoudre ces problèmes à distance ou à domicile. Voulez-vous qu\'on vous contacte ?';
+						const cta = 'Nos techniciens peuvent résoudre ces problèmes. Voulez-vous être contacté ?';
 						addMsg('bot', cta);
 						chatHistory.push({ role: 'assistant', content: cta });
 					}
@@ -512,12 +574,11 @@ const maxNavbarHeight = "80px"; // Adjusted navbar height
 				})
 				.catch(() => {
 					typing.remove();
-					addMsg('bot', 'Erreur lors de l\'analyse. Contactez-nous directement au 07 69 56 14 91.');
+					addMsg('bot', 'Erreur d\'analyse. Contactez-nous au 07 69 56 14 91.');
 					document.getElementById('sospc-header-sub').textContent = 'Erreur';
 				});
 			}
 
-			// ---- Chat ----
 			window.sospcSend = function() {
 				const input = document.getElementById('sospc-input');
 				const msg = input.value.trim();
@@ -542,15 +603,13 @@ const maxNavbarHeight = "80px"; // Adjusted navbar height
 					chatHistory.push({ role: 'assistant', content: reply });
 					save();
 				})
-				.catch(() => { typing.remove(); addMsg('bot', 'Erreur de connexion. Veuillez réessayer.'); })
+				.catch(() => { typing.remove(); addMsg('bot', 'Erreur de connexion.'); })
 				.finally(() => { document.getElementById('sospc-send').disabled = false; input.focus(); });
 			};
 
-			// ---- Init ----
 			document.addEventListener('DOMContentLoaded', function() {
 				const saved = load();
 				if (saved && saved.diagData) {
-					// Données existantes — charger silencieusement
 					diagData = saved.diagData;
 					diagReport = saved.diagReport;
 					chatHistory = saved.chatHistory || [];
@@ -562,7 +621,6 @@ const maxNavbarHeight = "80px"; // Adjusted navbar height
 					document.getElementById('sospc-fab-text').textContent = 'Voir le diagnostic';
 					document.getElementById('sospc-fab-badge').style.display = 'flex';
 				} else {
-					// Pas de données — générer session ID et attendre
 					sessionId = genId();
 					document.getElementById('sospc-cmd').textContent = buildCmd(sessionId);
 				}
