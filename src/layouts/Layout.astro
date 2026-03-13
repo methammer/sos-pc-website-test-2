@@ -484,6 +484,7 @@ const maxNavbarHeight = "80px"; // Adjusted navbar height
 		</div>
 
 		<style>
+		body.cover-active #sospc-widget { display: none !important; }
 		#sospc-widget {
 			position: fixed;
 			bottom: 24px;
@@ -782,7 +783,8 @@ const maxNavbarHeight = "80px"; // Adjusted navbar height
 
 		@media (max-width: 480px) {
 			#sospc-panel { width: calc(100vw - 32px); }
-			#sospc-widget { bottom: 16px; right: 16px; }
+			body.cover-active #sospc-widget { display: none !important; }
+		#sospc-widget { bottom: 16px; right: 16px; }
 			#sospc-fab-text { display: none; }
 			#sospc-fab { padding: 14px; border-radius: 50%; }
 		}
