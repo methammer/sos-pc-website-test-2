@@ -474,7 +474,7 @@ const maxNavbarHeight = "80px"; // Adjusted navbar height
 				}
 				const typing = addMsg('bot typing', 'Analyse de votre PC en cours...');
 
-				fetch('/api/analyze', {
+				fetch('https://sos-pc-diagnostic.netlify.app/api/analyze', {
 					method: 'POST',
 					headers: { 'Content-Type': 'application/json' },
 					body: JSON.stringify({ data: diagData, problem: '' })
@@ -529,7 +529,7 @@ const maxNavbarHeight = "80px"; // Adjusted navbar height
 				chatHistory.push({ role: 'user', content: msg });
 				const typing = addMsg('bot typing', '...');
 
-				fetch('/api/chat', {
+				fetch('https://sos-pc-diagnostic.netlify.app/api/chat', {
 					method: 'POST',
 					headers: { 'Content-Type': 'application/json' },
 					body: JSON.stringify({ messages: chatHistory, systemData: diagData, report: diagReport })
