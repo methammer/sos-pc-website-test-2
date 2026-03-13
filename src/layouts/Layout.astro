@@ -112,7 +112,292 @@ const maxNavbarHeight = "80px"; // Adjusted navbar height
         }
       });
     </script>
-	</body>
+	
+		<!-- ===== CHATBOT FLOTTANT ===== -->
+		<div id="diag-chatbot" style="display:none;">
+			<div id="diag-chat-bubble" onclick="toggleChat()">
+				<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+				<span id="diag-chat-label">Diagnostic prêt</span>
+				<span id="diag-chat-notif">1</span>
+			</div>
+
+			<div id="diag-chat-panel">
+				<div id="diag-chat-header">
+					<div>
+						<strong>Assistant SOS-PC</strong>
+						<span id="diag-chat-status">Analyse terminée</span>
+					</div>
+					<button onclick="toggleChat()" id="diag-chat-close">✕</button>
+				</div>
+
+				<div id="diag-chat-score-bar">
+					<span id="diag-score-label">Score santé</span>
+					<div id="diag-score-track"><div id="diag-score-fill"></div></div>
+					<span id="diag-score-val">—</span>
+				</div>
+
+				<div id="diag-chat-messages"></div>
+
+				<div id="diag-chat-input-row">
+					<input type="text" id="diag-chat-input" placeholder="Posez une question..." onkeydown="if(event.key==='Enter') sendDiagChat()" />
+					<button onclick="sendDiagChat()" id="diag-chat-send">↑</button>
+				</div>
+			</div>
+		</div>
+
+		<style>
+			/* ===== SECTION DIAGNOSTIC ===== */
+			.diagnostic-section { text-align: center; }
+			.diagnostic-intro { color: var(--text-secondary, #666); max-width: 540px; margin: 0 auto 2rem; }
+
+			.diagnostic-card {
+				background: var(--card-bg, white);
+				border: 1px solid var(--border-color, #e8e7e4);
+				border-radius: 12px;
+				padding: 2rem;
+				max-width: 600px;
+				margin: 0 auto;
+				text-align: left;
+			}
+
+			.diagnostic-steps { display: flex; flex-direction: column; gap: 12px; margin-bottom: 1.5rem; }
+			.diag-step { display: flex; align-items: flex-start; gap: 12px; font-size: 14px; }
+			.diag-step-num {
+				width: 26px; height: 26px; border-radius: 50%;
+				background: #185FA5; color: white;
+				font-size: 12px; font-weight: 600;
+				display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+			}
+			.diag-step kbd {
+				background: #f4f4f2; border: 1px solid #d0d0cc;
+				border-radius: 4px; padding: 1px 6px; font-size: 12px; font-family: inherit;
+			}
+
+			.diag-cmd-box {
+				background: #1e1e1e; border-radius: 8px;
+				padding: 1rem 1.25rem;
+				display: flex; align-items: center; justify-content: space-between; gap: 12px;
+				margin-bottom: 1rem;
+			}
+			.diag-cmd-box code { color: #4ec9b0; font-size: 13px; font-family: 'Courier New', monospace; word-break: break-all; }
+			.diag-copy-btn {
+				background: #333; color: #ccc; border: none; border-radius: 6px;
+				padding: 6px 14px; font-size: 13px; cursor: pointer; flex-shrink: 0; transition: background 0.2s;
+			}
+			.diag-copy-btn:hover { background: #555; }
+			.diag-copy-btn.copied { background: #1D9E75; color: white; }
+			.diag-privacy { font-size: 12px; color: #888; text-align: center; }
+
+			/* ===== CHATBOT FLOTTANT ===== */
+			#diag-chatbot { position: fixed; bottom: 24px; right: 24px; z-index: 9999; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+
+			#diag-chat-bubble {
+				background: #185FA5; color: white;
+				border-radius: 50px; padding: 12px 20px;
+				display: flex; align-items: center; gap: 10px;
+				cursor: pointer; box-shadow: 0 4px 20px rgba(24,95,165,0.4);
+				transition: transform 0.2s, box-shadow 0.2s;
+			}
+			#diag-chat-bubble:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(24,95,165,0.5); }
+			#diag-chat-label { font-size: 14px; font-weight: 500; }
+			#diag-chat-notif {
+				background: #E24B4A; color: white; border-radius: 50%;
+				width: 18px; height: 18px; font-size: 11px; font-weight: 700;
+				display: flex; align-items: center; justify-content: center;
+			}
+
+			#diag-chat-panel {
+				position: absolute; bottom: 60px; right: 0;
+				width: 360px; background: white;
+				border: 1px solid #e8e7e4; border-radius: 16px;
+				box-shadow: 0 8px 40px rgba(0,0,0,0.15);
+				display: none; flex-direction: column; overflow: hidden;
+			}
+			#diag-chat-panel.open { display: flex; }
+
+			#diag-chat-header {
+				background: #185FA5; color: white;
+				padding: 14px 16px;
+				display: flex; justify-content: space-between; align-items: center;
+			}
+			#diag-chat-header strong { font-size: 14px; display: block; }
+			#diag-chat-status { font-size: 11px; opacity: 0.8; }
+			#diag-chat-close { background: none; border: none; color: white; font-size: 16px; cursor: pointer; opacity: 0.7; padding: 0; }
+			#diag-chat-close:hover { opacity: 1; }
+
+			#diag-chat-score-bar {
+				display: flex; align-items: center; gap: 10px;
+				padding: 10px 16px; background: #f4f4f2; border-bottom: 1px solid #e8e7e4;
+				font-size: 12px;
+			}
+			#diag-score-label { color: #666; flex-shrink: 0; }
+			#diag-score-track { flex: 1; height: 6px; background: #e0e0e0; border-radius: 3px; overflow: hidden; }
+			#diag-score-fill { height: 100%; border-radius: 3px; width: 0%; transition: width 1s ease; }
+			#diag-score-val { font-weight: 600; font-size: 13px; flex-shrink: 0; min-width: 36px; text-align: right; }
+
+			#diag-chat-messages {
+				flex: 1; overflow-y: auto; padding: 14px;
+				display: flex; flex-direction: column; gap: 10px;
+				max-height: 300px; min-height: 120px;
+			}
+			.diag-msg { max-width: 85%; padding: 9px 13px; border-radius: 10px; font-size: 13px; line-height: 1.5; }
+			.diag-msg.user { background: #185FA5; color: white; align-self: flex-end; border-bottom-right-radius: 3px; }
+			.diag-msg.bot { background: #f4f4f2; color: #1a1a18; align-self: flex-start; border-bottom-left-radius: 3px; }
+			.diag-msg.typing { color: #999; font-style: italic; }
+
+			#diag-chat-input-row { display: flex; gap: 8px; padding: 12px; border-top: 1px solid #e8e7e4; }
+			#diag-chat-input {
+				flex: 1; border: 1px solid #e8e7e4; border-radius: 20px;
+				padding: 8px 14px; font-size: 13px; outline: none; transition: border 0.2s;
+			}
+			#diag-chat-input:focus { border-color: #378ADD; }
+			#diag-chat-send {
+				background: #185FA5; color: white; border: none;
+				border-radius: 50%; width: 34px; height: 34px;
+				font-size: 16px; cursor: pointer; flex-shrink: 0;
+				display: flex; align-items: center; justify-content: center;
+			}
+			#diag-chat-send:disabled { background: #e0e0e0; }
+
+			@media (max-width: 480px) {
+				#diag-chat-panel { width: calc(100vw - 32px); right: -8px; }
+				#diag-chatbot { bottom: 16px; right: 16px; }
+			}
+		</style>
+
+		<script>
+			// ===== SECTION DIAGNOSTIC =====
+			function copyDiagCmd() {
+				const cmd = document.getElementById('diag-cmd').textContent;
+				navigator.clipboard.writeText(cmd).then(() => {
+					const btn = document.querySelector('.diag-copy-btn');
+					btn.textContent = 'Copié !';
+					btn.classList.add('copied');
+					setTimeout(() => { btn.textContent = 'Copier'; btn.classList.remove('copied'); }, 2500);
+				});
+			}
+
+			// ===== CHATBOT =====
+			let diagData = null;
+			let diagReport = null;
+			const diagHistory = [];
+			let chatOpen = false;
+
+			function toggleChat() {
+				chatOpen = !chatOpen;
+				const panel = document.getElementById('diag-chat-panel');
+				const notif = document.getElementById('diag-chat-notif');
+				panel.classList.toggle('open', chatOpen);
+				if (chatOpen) notif.style.display = 'none';
+			}
+
+			function diagAppendMsg(role, text) {
+				const box = document.getElementById('diag-chat-messages');
+				const div = document.createElement('div');
+				div.className = 'diag-msg ' + role;
+				div.textContent = text;
+				box.appendChild(div);
+				box.scrollTop = box.scrollHeight;
+				return div;
+			}
+
+			async function sendDiagChat() {
+				const input = document.getElementById('diag-chat-input');
+				const msg = input.value.trim();
+				if (!msg) return;
+				input.value = '';
+				document.getElementById('diag-chat-send').disabled = true;
+
+				diagAppendMsg('user', msg);
+				diagHistory.push({ role: 'user', content: msg });
+
+				const typing = diagAppendMsg('bot typing', '...');
+
+				try {
+					const resp = await fetch('https://sos-pc-diagnostic.netlify.app/api/chat', {
+						method: 'POST',
+						headers: { 'Content-Type': 'application/json' },
+						body: JSON.stringify({ messages: diagHistory, systemData: diagData, report: diagReport })
+					});
+					const json = await resp.json();
+					const reply = json.message || 'Désolé, une erreur est survenue.';
+					typing.remove();
+					diagAppendMsg('bot', reply);
+					diagHistory.push({ role: 'assistant', content: reply });
+				} catch {
+					typing.remove();
+					diagAppendMsg('bot', 'Erreur de connexion. Veuillez réessayer.');
+				} finally {
+					document.getElementById('diag-chat-send').disabled = false;
+					input.focus();
+				}
+			}
+
+			// ===== INIT : lecture des données URL =====
+			(async function initDiag() {
+				const params = new URLSearchParams(window.location.search);
+				const encoded = params.get('diag');
+				if (!encoded) return;
+
+				// Nettoyer l'URL sans recharger
+				window.history.replaceState({}, '', window.location.pathname);
+
+				try {
+					diagData = JSON.parse(atob(encoded));
+				} catch { return; }
+
+				// Afficher le chatbot
+				document.getElementById('diag-chatbot').style.display = 'block';
+
+				// Analyser avec l'IA
+				const typing = diagAppendMsg('bot typing', 'Analyse de votre PC en cours...');
+
+				try {
+					const resp = await fetch('https://sos-pc-diagnostic.netlify.app/api/analyze', {
+						method: 'POST',
+						headers: { 'Content-Type': 'application/json' },
+						body: JSON.stringify({ data: diagData, problem: '' })
+					});
+					const json = await resp.json();
+					diagReport = json.report;
+
+					typing.remove();
+
+					// Score
+					const score = diagReport?.score || 50;
+					const fill = document.getElementById('diag-score-fill');
+					fill.style.background = score >= 70 ? '#1D9E75' : score >= 40 ? '#BA7517' : '#E24B4A';
+					document.getElementById('diag-score-val').textContent = score + '/100';
+					setTimeout(() => { fill.style.width = score + '%'; }, 200);
+
+					// Message d'accueil avec résumé
+					const summary = diagReport?.summary || 'Analyse terminée.';
+					diagAppendMsg('bot', summary);
+					diagHistory.push({ role: 'assistant', content: summary });
+
+					// Problèmes critiques en premier
+					const criticals = (diagReport?.issues || []).filter(i => i.level === 'critical');
+					if (criticals.length) {
+						const msg = `⚠️ ${criticals.length} problème(s) critique(s) détecté(s) : ${criticals.map(i => i.title).join(', ')}. Voulez-vous que je vous explique ?`;
+						diagAppendMsg('bot', msg);
+						diagHistory.push({ role: 'assistant', content: msg });
+					}
+
+					// Ouvrir automatiquement
+					toggleChat();
+
+					// Scroll vers section diagnostic
+					document.getElementById('diagnostic')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+				} catch {
+					typing.remove();
+					diagAppendMsg('bot', 'Une erreur est survenue lors de l\'analyse. Contactez-nous directement.');
+					toggleChat();
+				}
+			})();
+		</script>
+
+</body>
 </html>
 <style define:vars={{ maxNavbarHeight }} is:global>
 	:root {
