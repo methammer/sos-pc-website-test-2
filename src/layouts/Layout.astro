@@ -452,6 +452,24 @@ const { title = 'SOS-PC' } = Astro.props;
 </style>
 
 <script>
+  // Cover page observer
+  document.addEventListener("DOMContentLoaded", function() {
+    const coverPage = document.getElementById("sos-pc-cover-page");
+    if (!coverPage) return;
+    const body = document.body;
+    if (!coverPage.classList.contains("dismissed") && sessionStorage.getItem("sospc_cover_dismissed_session_v1") !== "true") {
+      body.classList.add("cover-active");
+    }
+    new MutationObserver(function(mutations) {
+      mutations.forEach(function(m) {
+        if (m.target.classList.contains("dismissed")) {
+          body.classList.remove("cover-active");
+        }
+      });
+    }).observe(coverPage, { attributes: true, attributeFilter: ["class"] });
+  });
+</script>
+<script>
 (function() {
   const STORAGE_KEY = 'sospc_diagnostic_v1';
   const POS_KEY     = 'sospc_position_v1';
