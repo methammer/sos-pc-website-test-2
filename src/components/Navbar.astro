@@ -25,7 +25,7 @@ const navLinks = [
     </ul>
 
     <div class="nav-right">
-      <button class="theme-btn" id="theme-toggle" aria-label="Changer de thème" title="Changer de thème">
+      <button class="theme-btn" id="theme-toggle" aria-label="Changer de thème">
         <span class="icon-sun">☀</span>
         <span class="icon-moon">◑</span>
       </button>
@@ -47,38 +47,25 @@ const navLinks = [
     border-bottom: 1px solid var(--border);
     transition: background 0.3s;
   }
-
-  html:not(.dark) nav {
-    background: rgba(240, 244, 248, 0.92);
-  }
+  html:not(.dark) nav { background: rgba(240, 244, 248, 0.92); }
 
   .nav-inner {
     max-width: 1200px; margin: 0 auto; padding: 0 1.5rem;
     height: 100%; display: flex; align-items: center; gap: 2rem;
   }
 
-  .logo-link {
-    display: flex; align-items: center; gap: 10px; text-decoration: none;
-    flex-shrink: 0;
-  }
+  .logo-link { display: flex; align-items: center; gap: 10px; text-decoration: none; flex-shrink: 0; }
   .logo-img { width: 32px; height: 32px; object-fit: contain; }
-  .logo-text {
-    font-size: 16px; font-weight: 700; color: var(--accent-hex);
-    letter-spacing: -0.01em;
-  }
+  .logo-text { font-size: 16px; font-weight: 700; color: var(--accent-hex); letter-spacing: -0.01em; }
 
-  .nav-links {
-    display: flex; align-items: center; gap: 4px; list-style: none; margin-left: auto;
-  }
+  .nav-links { display: flex; align-items: center; gap: 4px; list-style: none; margin-left: auto; }
+
   .nav-link {
     display: block; padding: 6px 12px; font-size: 14px; color: var(--text-muted);
     text-decoration: none; border-radius: var(--radius);
     transition: color 0.2s, background 0.2s;
-    font-family: var(--font-body);
   }
-  .nav-link:hover, .nav-link.active {
-    color: var(--text); background: rgba(255,255,255,0.05);
-  }
+  .nav-link:hover, .nav-link.active { color: var(--text); background: rgba(255,255,255,0.05); }
   html:not(.dark) .nav-link:hover { background: rgba(0,0,0,0.05); }
 
   .nav-cta {
@@ -97,24 +84,42 @@ const navLinks = [
     font-size: 14px; transition: all 0.2s; display: flex; align-items: center;
   }
   .theme-btn:hover { color: var(--accent-hex); border-color: var(--accent-hex); }
-  .icon-sun { display: none; }
+
   html.dark .icon-sun { display: none; }
   html.dark .icon-moon { display: block; }
   html:not(.dark) .icon-sun { display: block; }
   html:not(.dark) .icon-moon { display: none; }
 
-  .hamburger { display: none; flex-direction: column; gap: 5px; background: none; border: none; cursor: pointer; padding: 6px; margin-left: auto; }
-  .hamburger span { display: block; width: 20px; height: 1.5px; background: var(--text); transition: all 0.3s; }
+  /* Hamburger — caché sur desktop */
+  .hamburger {
+    display: none;
+    flex-direction: column; gap: 5px;
+    background: none; border: none; cursor: pointer; padding: 6px;
+  }
+  .hamburger span { display: block; width: 20px; height: 2px; background: var(--text); border-radius: 2px; transition: all 0.3s; }
 
-  @media (max-width: 768px) { nav { padding: 0 1rem; } .nav-links { position: fixed; top: var(--navbar-h); left: 0; right: 0; bottom: 0; background: var(--bg-card); border-top: 1px solid var(--border); flex-direction: column; padding: 1.5rem; gap: 4px; align-items: flex-start; display: none; z-index: 99; } .nav-links.open { display: flex; } .hamburger { display: flex; }
+  /* ===== MOBILE ===== */
+  @media (max-width: 768px) {
+    nav { padding: 0 1rem; }
+
+    .hamburger { display: flex; margin-left: auto; }
+
     .nav-links {
-      display: none; position: fixed; top: var(--navbar-h); left: 0; right: 0; bottom: 0;
-      background: var(--bg-card); flex-direction: column; padding: 2rem;
-      gap: 4px; align-items: flex-start; border-top: 1px solid var(--border);
+      display: none;
+      position: fixed;
+      top: var(--navbar-h); left: 0; right: 0; bottom: 0;
+      background: var(--bg-card);
+      border-top: 1px solid var(--border);
+      flex-direction: column;
+      padding: 1.5rem;
+      gap: 4px;
+      align-items: flex-start;
+      z-index: 99;
+      overflow-y: auto;
     }
     .nav-links.open { display: flex; }
-    .nav-link { font-size: 18px; padding: 10px 16px; }
-    .hamburger { display: none; flex-direction: column; gap: 5px; background: none; border: none; cursor: pointer; padding: 6px; margin-left: auto; }
+    .nav-link { font-size: 18px; padding: 12px 16px; width: 100%; }
+    .nav-cta { font-size: 15px; padding: 12px 16px; margin-left: 0; width: 100%; text-align: left; }
   }
 </style>
 
@@ -128,12 +133,19 @@ const navLinks = [
     hamburger.setAttribute('aria-expanded', open ? 'true' : 'false');
   });
 
+  // Fermer le menu en cliquant sur un lien
+  navList?.querySelectorAll('a').forEach(a => {
+    a.addEventListener('click', () => {
+      navList.classList.remove('open');
+      hamburger?.setAttribute('aria-expanded', 'false');
+    });
+  });
+
   // Theme toggle
   function applyTheme(dark) {
     document.documentElement.classList.toggle('dark', dark);
     try { localStorage.setItem('theme', dark ? 'dark' : 'light'); } catch(e) {}
   }
-
   themeBtn?.addEventListener('click', () => {
     applyTheme(!document.documentElement.classList.contains('dark'));
   });
@@ -141,7 +153,7 @@ const navLinks = [
   // Init theme
   const saved = (() => { try { return localStorage.getItem('theme'); } catch(e) { return null; } })();
   if (saved === 'light') applyTheme(false);
-  else if (saved === 'dark' || window.matchMedia('(prefers-color-scheme: dark)').matches) applyTheme(true);
+  else applyTheme(true);
 
   // Active link
   const links = document.querySelectorAll('.nav-link');

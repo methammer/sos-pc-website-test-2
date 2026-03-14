@@ -612,48 +612,19 @@ const portfolioItems = [
 </style>
 
 <script>
-  // Animation d'apparition au scroll
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('visible');
-        observer.unobserve(entry.target);
-      }
-    });
-  }, { threshold: 0.1 });
-
-  document.querySelectorAll('section, .service-card-new, .portfolio-card, .info-card').forEach(el => {
-    el.style.opacity = '0';
-    el.style.transform = 'translateY(20px)';
-    el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-    observer.observe(el);
-  });
-
-  document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('section, .service-card-new, .portfolio-card, .info-card').forEach(el => {
-      el.classList.add = (cls) => {
-        if (cls === 'visible') {
-          el.style.opacity = '1';
-          el.style.transform = 'translateY(0)';
-        }
-      };
-    });
-  });
-
-  // Scroll reveal simplifié
   const revealObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
-        entry.target.style.opacity = '1';
-        entry.target.style.transform = 'translateY(0)';
+        entry.target.style.opacity = "1";
+        entry.target.style.transform = "translateY(0)";
+        revealObserver.unobserve(entry.target);
       }
     });
-  }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
-
-  document.querySelectorAll('section, .service-card-new, .portfolio-card, .info-card, .stat').forEach((el, i) => {
-    el.style.opacity = '0';
-    el.style.transform = 'translateY(24px)';
-    el.style.transition = `opacity 0.55s ease ${i * 0.04}s, transform 0.55s ease ${i * 0.04}s`;
+  }, { threshold: 0.05 });
+  document.querySelectorAll(".service-card-new, .portfolio-card, .info-card, .stat").forEach(function(el, i) {
+    el.style.opacity = "0";
+    el.style.transform = "translateY(20px)";
+    el.style.transition = "opacity 0.45s ease " + (i * 0.04) + "s, transform 0.45s ease " + (i * 0.04) + "s";
     revealObserver.observe(el);
   });
 </script>
