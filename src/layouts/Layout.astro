@@ -1,902 +1,715 @@
 ---
-import Navbar from '../components/Navbar.astro';
 import AsciiBackground from '../components/AsciiBackground.astro';
-import CoverPage from '../components/CoverPage.astro'; // Import the CoverPage component
+import Navbar from '../components/Navbar.astro';
+import CoverPage from '../components/CoverPage.astro';
 
 interface Props {
-	title: string;
-	description?: string;
+  title?: string;
 }
-
-const { title, description = "SOS-PC - Solutions informatiques et web" } = Astro.props;
-const maxNavbarHeight = "80px"; // Adjusted navbar height
+const { title = 'SOS-PC' } = Astro.props;
 ---
 
 <!doctype html>
 <html lang="fr">
-	<head>
-		<meta charset="UTF-8" />
-		<meta name="description" content={description} />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<link rel="icon" type="image/png" href="/logo.png" /> {/* Updated favicon path */}
-		<meta name="generator" content={Astro.generator} />
-		<title>{title} | SOS-PC</title>
-		{/* Add Open Graph og:image meta tag if not already present, or update existing one */}
-		<meta property="og:image" content="/logo.png" /> {/* Updated OG image path */}
-		<style define:vars={{ maxNavbarHeight }}>
-			html {
-				scroll-padding-top: var(--maxNavbarHeight);
-				scroll-behavior: smooth;
-			}
-      /* Prevent scroll on body while cover page is active */
-      body.cover-active {
-        overflow: hidden;
-        /* On some systems, scrollbar might still be there, taking space.
-           This is a common issue. For a perfect solution, more complex JS might be needed
-           to calculate scrollbar width and add padding, or use position:fixed on body.
-           For now, overflow:hidden is the simplest approach. */
-      }
-		</style>
-		{/* Inline script to set initial theme to prevent FOUC (Flash of Unstyled Content) */}
-		<script is:inline>
-			const theme = (() => {
-				if (typeof localStorage !== 'undefined' && localStorage.getItem('theme')) {
-					return localStorage.getItem('theme');
-				}
-				if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-					return 'dark';
-				}
-				return 'light';
-			})();
-
-			if (theme === 'dark') {
-				document.documentElement.classList.add('dark');
-			} else {
-				document.documentElement.classList.remove('dark'); // Ensure light is default if no class
-			}
-		</script>
-	</head>
-	<body>
-    <CoverPage /> {/* Add CoverPage here, it will control its own visibility */}
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="description" content="SOS-PC — Diagnostic, réparation et création web" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <CoverPage />
     <AsciiBackground />
-		<Navbar />
-		<main tabindex="-1"> {/* Added tabindex for programmatic focus */}
-			<slot />
-		</main>
-		<footer>
-			<p>&copy; {new Date().getFullYear()} SOS-PC. Tous droits réservés.</p>
-		</footer>
-    <script>
-      // Script to add/remove 'cover-active' class on body based on CoverPage state
-      document.addEventListener('DOMContentLoaded', () => {
-        const coverPage = document.getElementById('sos-pc-cover-page'); // ID from CoverPage.astro
-        const body = document.body;
-        const dismissedKey = 'sospc_cover_dismissed_session_v1'; // Must match key in CoverPage.astro
+    <Navbar />
+    <main>
+      <slot />
+    </main>
+    <footer>
+      <p><span class="mono">© 2026</span> SOS-PC — Tous droits réservés</p>
+    </footer>
 
-        if (!coverPage) return;
-
-        function updateBodyScrollState() {
-          let isCoverDismissedBySession = false;
-          try {
-            isCoverDismissedBySession = sessionStorage.getItem(dismissedKey) === 'true';
-          } catch(e) { /* ignore */ }
-
-          // If coverPage has 'dismissed' class OR if it was dismissed in session (and might be hidden by its own script)
-          if (coverPage.classList.contains('dismissed') || isCoverDismissedBySession) {
-            body.classList.remove('cover-active');
-          } else {
-            body.classList.add('cover-active');
-          }
-        }
-
-        updateBodyScrollState(); // Set initial state
-
-        // Observe CoverPage for class changes (when it gets 'dismissed')
-        const observer = new MutationObserver((mutationsList) => {
-          for (const mutation of mutationsList) {
-            if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
-              updateBodyScrollState();
-              // If cover is now dismissed, we can stop observing
-              if (coverPage.classList.contains('dismissed')) {
-                observer.disconnect();
-              }
-              break; // Only need to check one mutation if class attribute changed
-            }
-          }
-        });
-        
-        // Only start observing if the cover page is not already dismissed by session logic
-        // (The CoverPage.astro script handles adding 'dismissed' class if session key is found)
-        if (!coverPage.classList.contains('dismissed')) {
-            observer.observe(coverPage, { attributes: true, attributeFilter: ['class'] });
-        }
-      });
-    </script>
-
-
-		<!-- ===== SOS-PC ASSISTANT FLOTTANT v7 ===== -->
-		<div id="sospc-widget" class="sospc-closed">
-
-			<div id="sospc-fab-content">
-				<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-				<span id="sospc-fab-text">Diagnostic PC</span>
-				<span id="sospc-fab-badge" style="display:none">!</span>
-			</div>
-
-			<div id="sospc-panel-content">
-				<div id="sospc-header">
-					<div>
-						<span id="sospc-header-title">Assistant SOS-PC</span>
-						<span id="sospc-header-sub">Diagnostic intelligent</span>
-					</div>
-					<div style="display:flex;gap:6px;align-items:center;">
-						<button id="sospc-reset-btn" onclick="sospcReset()" title="Nouveau scan">
-							<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg>
-							Nouveau scan
-						</button>
-						<button id="sospc-close-btn" onclick="sospcToggle()" aria-label="Fermer">
-							<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-						</button>
-					</div>
-				</div>
-
-				<div id="sospc-view-waiting">
-					<div id="sospc-waiting-body">
-						<p id="sospc-intro-title">Analysez votre PC gratuitement</p>
-						<p id="sospc-intro-desc">Notre IA détecte les problèmes de performance, les erreurs système et vous donne des conseils personnalisés.</p>
-						<div id="sospc-steps">
-							<div class="sospc-step">
-								<span class="sospc-step-n">1</span>
-								<span>Ouvrez le Terminal (<kbd>Win</kbd>+<kbd>X</kbd> → Terminal)</span>
-							</div>
-							<div class="sospc-step">
-								<span class="sospc-step-n">2</span>
-								<span>Copiez et collez cette commande :</span>
-							</div>
-						</div>
-						<div id="sospc-cmd-box">
-							<code id="sospc-cmd">chargement...</code>
-							<button id="sospc-copy-btn" onclick="sospcCopy()">Copier</button>
-						</div>
-						<div class="sospc-step">
-							<span class="sospc-step-n">3</span>
-							<span>Restez sur cette page — le diagnostic apparaît automatiquement ici !</span>
-						</div>
-						<div id="sospc-waiting-indicator" style="display:none;">
-							<div id="sospc-pulse"></div>
-							<span>En attente des données de votre PC...</span>
-						</div>
-						<p id="sospc-privacy">🔒 Aucun fichier personnel collecté — uniquement les données techniques.</p>
-					</div>
-				</div>
-
-				<div id="sospc-view-diag" style="display:none;flex-direction:column;">
-					<div id="sospc-score-wrap">
-						<span id="sospc-score-lbl">Santé du PC</span>
-						<div id="sospc-score-track"><div id="sospc-score-fill"></div></div>
-						<span id="sospc-score-val">—</span>
-					</div>
-					<div id="sospc-messages"></div>
-					<div id="sospc-suggestions"></div>
-					<div id="sospc-input-wrap">
-						<input id="sospc-input" type="text" placeholder="Posez une question..." onkeydown="if(event.key==='Enter')sospcSend()" />
-						<button id="sospc-send" onclick="sospcSend()">
-							<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-						</button>
-					</div>
-				</div>
-			</div>
-		</div>
-
-		<style>
-		body.cover-active #sospc-widget { opacity: 0; pointer-events: none; }
-
-		#sospc-widget {
-			position: fixed;
-			bottom: 24px; right: 24px;
-			z-index: 9999;
-			font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-			transform-origin: bottom right;
-			transition:
-				width 0.38s cubic-bezier(0.34, 1.3, 0.64, 1),
-				border-radius 0.38s cubic-bezier(0.34, 1.3, 0.64, 1),
-				box-shadow 0.38s ease,
-				background 0.2s ease;
-		}
-		#sospc-widget.sospc-snapping {
-			transition:
-				left 0.32s cubic-bezier(0.34, 1.2, 0.64, 1),
-				top 0.32s cubic-bezier(0.34, 1.2, 0.64, 1),
-				width 0.38s cubic-bezier(0.34, 1.3, 0.64, 1),
-				border-radius 0.38s cubic-bezier(0.34, 1.3, 0.64, 1),
-				box-shadow 0.38s ease,
-				background 0.2s ease;
-		}
-		#sospc-widget.sospc-dragging {
-			transition: none !important;
-			user-select: none;
-		}
-		#sospc-widget.sospc-closed {
-			width: auto;
-			border-radius: 50px;
-			background: rgb(var(--accent));
-			box-shadow: 0 4px 16px rgba(136,58,234,0.4);
-			overflow: hidden;
-			cursor: pointer;
-		}
-		#sospc-widget.sospc-closed:not(.sospc-dragging):hover {
-			transform: translateY(-2px);
-			box-shadow: 0 6px 24px rgba(136,58,234,0.5);
-		}
-		#sospc-widget.sospc-open {
-			width: 360px;
-			border-radius: 16px;
-			background: var(--card-bg-color);
-			border: 1px solid var(--border-color);
-			box-shadow: 0 8px 40px rgba(0,0,0,0.18);
-			overflow: hidden;
-			cursor: default;
-		}
-		#sospc-fab-content {
-			display: flex; align-items: center; gap: 8px;
-			padding: 12px 20px; color: white;
-			font-size: 14px; font-weight: 600;
-			white-space: nowrap; user-select: none;
-			touch-action: none;
-		}
-		#sospc-widget.sospc-open #sospc-fab-content { display: none; }
-		#sospc-fab-badge {
-			background: #E24B4A; color: white; border-radius: 50%;
-			width: 18px; height: 18px; font-size: 11px; font-weight: 700;
-			display: flex; align-items: center; justify-content: center;
-		}
-		#sospc-panel-content {
-			display: none; flex-direction: column; opacity: 0;
-			transition: opacity 0.2s ease 0.15s;
-			max-height: 80vh; overflow: hidden;
-		}
-		#sospc-widget.sospc-open #sospc-panel-content { display: flex; opacity: 1; }
-		#sospc-header {
-			background: rgb(var(--accent)); padding: 12px 16px;
-			display: flex; justify-content: space-between; align-items: center;
-			flex-shrink: 0; cursor: grab; user-select: none; touch-action: none;
-		}
-		#sospc-header:active { cursor: grabbing; }
-		#sospc-header-title { display: block; color: white; font-size: 14px; font-weight: 600; }
-		#sospc-header-sub { display: block; color: rgba(255,255,255,0.75); font-size: 11px; }
-		#sospc-close-btn, #sospc-reset-btn {
-			background: none; border: none; color: white; cursor: pointer;
-			opacity: 0.75; padding: 4px 8px; border-radius: 6px;
-			display: flex; align-items: center; gap: 5px;
-			font-size: 12px; font-family: inherit;
-			transition: opacity 0.2s, background 0.2s;
-			touch-action: auto;
-		}
-		#sospc-close-btn { padding: 4px; }
-		#sospc-close-btn:hover, #sospc-reset-btn:hover { opacity: 1; background: rgba(255,255,255,0.15); }
-		#sospc-waiting-body { padding: 16px; overflow-y: auto; }
-		#sospc-intro-title { font-size: 15px; font-weight: 600; color: var(--heading-color); margin: 0 0 6px; }
-		#sospc-intro-desc { font-size: 13px; color: var(--card-text-color); margin: 0 0 14px; line-height: 1.5; }
-		#sospc-steps { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
-		.sospc-step { display: flex; align-items: flex-start; gap: 10px; font-size: 13px; color: var(--card-text-color); }
-		.sospc-step-n {
-			width: 22px; height: 22px; border-radius: 50%;
-			background: rgb(var(--accent)); color: white;
-			font-size: 11px; font-weight: 700;
-			display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-		}
-		.sospc-step kbd {
-			background: var(--bg-color); border: 1px solid var(--border-color);
-			border-radius: 4px; padding: 1px 5px; font-size: 11px;
-			font-family: inherit; color: var(--text-color);
-		}
-		#sospc-cmd-box {
-			background: #1a1a2e; border-radius: 8px;
-			padding: 10px 12px; display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
-		}
-		#sospc-cmd { color: #a78bfa; font-size: 12px; font-family: 'Courier New', monospace; flex: 1; word-break: break-all; }
-		#sospc-copy-btn {
-			background: rgba(136,58,234,0.3); color: #c4b5fd;
-			border: 1px solid rgba(167,139,250,0.3); border-radius: 6px;
-			padding: 5px 10px; font-size: 12px; cursor: pointer; flex-shrink: 0; transition: background 0.2s; white-space: nowrap;
-		}
-		#sospc-copy-btn:hover { background: rgba(136,58,234,0.5); }
-		#sospc-copy-btn.copied { background: rgba(29,158,117,0.4); color: #6ee7b7; border-color: rgba(110,231,183,0.3); }
-		#sospc-waiting-indicator {
-			display: flex; align-items: center; gap: 10px;
-			background: rgba(var(--accent), 0.08); border: 1px solid rgba(var(--accent), 0.2);
-			border-radius: 8px; padding: 10px 14px; margin: 10px 0;
-			font-size: 13px; color: var(--card-text-color);
-		}
-		#sospc-pulse {
-			width: 10px; height: 10px; border-radius: 50%;
-			background: rgb(var(--accent)); flex-shrink: 0;
-			animation: sospc-pulse 1.4s ease-in-out infinite;
-		}
-		@keyframes sospc-pulse {
-			0%, 100% { opacity: 1; transform: scale(1); }
-			50% { opacity: 0.4; transform: scale(0.7); }
-		}
-		#sospc-privacy { font-size: 11px; color: var(--card-text-color); opacity: 0.6; text-align: center; margin: 10px 0 0; }
-		#sospc-score-wrap {
-			display: flex; align-items: center; gap: 10px; padding: 10px 16px;
-			background: var(--bg-color); border-bottom: 1px solid var(--border-color); flex-shrink: 0;
-		}
-		#sospc-score-lbl { font-size: 12px; color: var(--card-text-color); flex-shrink: 0; }
-		#sospc-score-track { flex: 1; height: 6px; background: var(--border-color); border-radius: 3px; overflow: hidden; }
-		#sospc-score-fill { height: 100%; border-radius: 3px; width: 0%; transition: width 1.2s ease; }
-		#sospc-score-val { font-size: 13px; font-weight: 700; color: var(--heading-color); flex-shrink: 0; min-width: 40px; text-align: right; }
-		#sospc-messages {
-			flex: 1; overflow-y: auto; padding: 12px;
-			display: flex; flex-direction: column; gap: 8px;
-			min-height: 100px; max-height: 260px;
-		}
-		.sospc-msg { max-width: 88%; padding: 9px 12px; border-radius: 12px; font-size: 13px; line-height: 1.5; }
-		.sospc-msg.user { background: rgb(var(--accent)); color: white; align-self: flex-end; border-bottom-right-radius: 3px; }
-		.sospc-msg.bot { background: var(--bg-color); color: var(--text-color); align-self: flex-start; border-bottom-left-radius: 3px; border: 1px solid var(--border-color); }
-		.sospc-msg.typing { opacity: 0.6; font-style: italic; }
-		#sospc-suggestions { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 12px 10px; }
-		.sospc-suggestion {
-			background: rgba(var(--accent-light), 0.2); color: rgb(var(--accent-dark));
-			border: 1px solid rgba(var(--accent), 0.2); border-radius: 20px;
-			padding: 5px 12px; font-size: 12px; cursor: pointer; transition: background 0.2s; white-space: nowrap;
-		}
-		.sospc-suggestion:hover { background: rgba(var(--accent-light), 0.4); }
-		#sospc-input-wrap { display: flex; gap: 8px; padding: 10px 12px; border-top: 1px solid var(--border-color); flex-shrink: 0; }
-		#sospc-input {
-			flex: 1; background: var(--bg-color); border: 1px solid var(--border-color);
-			border-radius: 20px; padding: 8px 14px; font-size: 13px; color: var(--text-color);
-			outline: none; transition: border 0.2s;
-		}
-		#sospc-input:focus { border-color: rgb(var(--accent)); }
-		#sospc-send {
-			background: rgb(var(--accent)); color: white; border: none;
-			border-radius: 50%; width: 34px; height: 34px; cursor: pointer;
-			display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-			transition: background 0.2s, transform 0.1s;
-		}
-		#sospc-send:hover { background: rgb(var(--accent-dark)); }
-		#sospc-send:active { transform: scale(0.95); }
-		#sospc-send:disabled { background: var(--border-color); cursor: default; }
-		@media (max-width: 480px) {
-			#sospc-widget.sospc-open { width: calc(100vw - 32px); }
-		}
-		</style>
-
-		<script>
-		(function() {
-			const STORAGE_KEY = 'sospc_diagnostic_v1';
-			const POS_KEY     = 'sospc_position_v1';
-			const DRAG_THRESHOLD = 6;
-			const EDGE_MARGIN    = 16;
-			const PANEL_W        = 360;
-
-			let isOpen = false;
-			let diagData = null, diagReport = null, chatHistory = [];
-			let sessionId = null, pollInterval = null;
-			let dragStartX = 0, dragStartY = 0;
-			let dragOffsetX = 0, dragOffsetY = 0;
-			let dragMoved = false, isDragging = false;
-
-			// ---- Audio ----
-			function playPop() {
-				try {
-					const ctx = new (window.AudioContext || window.webkitAudioContext)();
-					[[880,440,0.18,0.25],[1320,660,0.08,0.18]].forEach(([f0,f1,vol,dur]) => {
-						const o = ctx.createOscillator(), g = ctx.createGain();
-						o.connect(g); g.connect(ctx.destination);
-						o.type = 'sine';
-						o.frequency.setValueAtTime(f0, ctx.currentTime);
-						o.frequency.exponentialRampToValueAtTime(f1, ctx.currentTime + dur * 0.5);
-						g.gain.setValueAtTime(0, ctx.currentTime);
-						g.gain.linearRampToValueAtTime(vol, ctx.currentTime + 0.01);
-						g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
-						o.start(ctx.currentTime); o.stop(ctx.currentTime + dur);
-					});
-				} catch(e) {}
-			}
-
-			// ---- Position ----
-			function gw() { return document.getElementById('sospc-widget'); }
-
-			function setPos(x, y, snap) {
-				const el = gw();
-				const rect = el.getBoundingClientRect();
-				const ww = window.innerWidth, wh = window.innerHeight;
-				x = Math.max(EDGE_MARGIN, Math.min(x, ww - rect.width - EDGE_MARGIN));
-				y = Math.max(EDGE_MARGIN, Math.min(y, wh - rect.height - EDGE_MARGIN));
-				if (snap) {
-					el.classList.add('sospc-snapping');
-					setTimeout(() => el.classList.remove('sospc-snapping'), 400);
-				}
-				el.style.right = 'auto'; el.style.bottom = 'auto';
-				el.style.left = x + 'px'; el.style.top  = y + 'px';
-				try { localStorage.setItem(POS_KEY, JSON.stringify({x, y})); } catch(e) {}
-			}
-
-			function snapToEdge() {
-				const el = gw(), r = el.getBoundingClientRect();
-				const snapRight = (r.left + r.width / 2) > window.innerWidth / 2;
-				const tx = snapRight ? window.innerWidth - r.width - EDGE_MARGIN : EDGE_MARGIN;
-				setPos(tx, r.top, true);
-			}
-
-			function ensurePanelVisible() {
-				const el = gw(), r = el.getBoundingClientRect();
-				const ww = window.innerWidth, wh = window.innerHeight;
-				const pw = Math.min(PANEL_W, ww - EDGE_MARGIN * 2);
-				let x = r.left, y = r.top;
-				if (x + pw > ww - EDGE_MARGIN) x = ww - pw - EDGE_MARGIN;
-				if (x < EDGE_MARGIN) x = EDGE_MARGIN;
-				const ph = Math.min(520, wh * 0.8);
-				if (y + ph > wh - EDGE_MARGIN) y = wh - ph - EDGE_MARGIN;
-				if (y < EDGE_MARGIN) y = EDGE_MARGIN;
-				if (Math.abs(x - r.left) > 1 || Math.abs(y - r.top) > 1) setPos(x, y, true);
-			}
-
-			function restorePos() {
-				try {
-					const s = localStorage.getItem(POS_KEY);
-					if (!s) return;
-					const {x, y} = JSON.parse(s);
-					const el = gw();
-					el.style.right = 'auto'; el.style.bottom = 'auto';
-					el.style.left = x + 'px'; el.style.top = y + 'px';
-				} catch(e) {}
-			}
-
-			// ---- Drag via Pointer Events ----
-			function initDrag() {
-				const handles = [
-					document.getElementById('sospc-fab-content'),
-					document.getElementById('sospc-header')
-				];
-
-				handles.forEach(handle => {
-					handle.addEventListener('pointerdown', e => {
-						if (e.target.closest('button')) return;
-						e.preventDefault();
-						handle.setPointerCapture(e.pointerId);
-						const r = gw().getBoundingClientRect();
-						dragStartX  = e.clientX; dragStartY  = e.clientY;
-						dragOffsetX = e.clientX - r.left;
-						dragOffsetY = e.clientY - r.top;
-						dragMoved   = false;
-						isDragging  = true;
-						gw().classList.add('sospc-dragging');
-					});
-
-					handle.addEventListener('pointermove', e => {
-						if (!isDragging) return;
-						const dx = Math.abs(e.clientX - dragStartX);
-						const dy = Math.abs(e.clientY - dragStartY);
-						if (dx > DRAG_THRESHOLD || dy > DRAG_THRESHOLD) dragMoved = true;
-						if (!dragMoved) return;
-						setPos(e.clientX - dragOffsetX, e.clientY - dragOffsetY, false);
-					});
-
-					handle.addEventListener('pointerup', e => {
-						if (!isDragging) return;
-						isDragging = false;
-						gw().classList.remove('sospc-dragging');
-						handle.releasePointerCapture(e.pointerId);
-						if (dragMoved && !isOpen) snapToEdge();
-						// Délai court pour laisser pointerup se terminer avant le click
-						if (!dragMoved) setTimeout(() => sospcToggle(), 10);
-						dragMoved = false;
-					});
-
-					handle.addEventListener('pointercancel', e => {
-						isDragging = false; dragMoved = false;
-						gw().classList.remove('sospc-dragging');
-					});
-				});
-			}
-
-			// ---- Toggle ----
-			window.sospcToggle = function() {
-				const el = gw();
-				isOpen = !isOpen;
-				if (isOpen) {
-					el.classList.remove('sospc-closed');
-					el.classList.add('sospc-open');
-					setTimeout(ensurePanelVisible, 50);
-					if (!diagData && !pollInterval) startPolling();
-					if (diagData) setTimeout(() => { const i = document.getElementById('sospc-input'); if(i) i.focus(); }, 300);
-				} else {
-					el.classList.remove('sospc-open');
-					el.classList.add('sospc-closed');
-					setTimeout(snapToEdge, 50);
-				}
-				document.getElementById('sospc-fab-badge').style.display = 'none';
-			};
-
-			// ---- Storage ----
-			function save() {
-				try { localStorage.setItem(STORAGE_KEY, JSON.stringify({diagData, diagReport, chatHistory, savedAt: Date.now()})); } catch(e) {}
-			}
-			function load() {
-				try { const r = localStorage.getItem(STORAGE_KEY); return r ? JSON.parse(r) : null; } catch(e) { return null; }
-			}
-			function clear() { try { localStorage.removeItem(STORAGE_KEY); } catch(e) {} }
-			function genId() { return Math.random().toString(36).slice(2,10).toUpperCase(); }
-			function buildCmd(sid) { return `$s='${sid}'; irm https://sos-pc.click/diag.ps1 | iex`; }
-
-			window.sospcCopy = function() {
-				navigator.clipboard.writeText(document.getElementById('sospc-cmd').textContent).then(() => {
-					const btn = document.getElementById('sospc-copy-btn');
-					btn.textContent = 'Copié !'; btn.classList.add('copied');
-					document.getElementById('sospc-waiting-indicator').style.display = 'flex';
-					setTimeout(() => { btn.textContent = 'Copier'; btn.classList.remove('copied'); }, 2500);
-				});
-			};
-
-			window.sospcReset = function() {
-				if (!confirm('Lancer un nouveau scan ?')) return;
-				stopPolling(); clear();
-				diagData = null; diagReport = null; chatHistory = [];
-				sessionId = genId();
-				document.getElementById('sospc-cmd').textContent = buildCmd(sessionId);
-				document.getElementById('sospc-view-diag').style.display = 'none';
-				document.getElementById('sospc-view-waiting').style.display = 'block';
-				document.getElementById('sospc-waiting-indicator').style.display = 'none';
-				document.getElementById('sospc-header-sub').textContent = 'Diagnostic intelligent';
-				document.getElementById('sospc-fab-text').textContent = 'Diagnostic PC';
-				document.getElementById('sospc-messages').innerHTML = '';
-				document.getElementById('sospc-suggestions').innerHTML = '';
-				startPolling();
-			};
-
-			// ---- Polling ----
-			function startPolling() {
-				if (pollInterval) return;
-				pollInterval = setInterval(async () => {
-					try {
-						const r = await fetch(`https://sos-pc-diagnostic.netlify.app/api/poll?s=${sessionId}`);
-						const json = await r.json();
-						if (json.ready && json.data) {
-							stopPolling(); diagData = json.data;
-							document.getElementById('sospc-waiting-indicator').style.display = 'none';
-							playPop();
-							if (!isOpen) {
-								isOpen = true;
-								gw().classList.remove('sospc-closed');
-								gw().classList.add('sospc-open');
-								setTimeout(ensurePanelVisible, 50);
-							}
-							runAnalysis();
-						}
-					} catch(e) {}
-				}, 2000);
-			}
-			function stopPolling() { if (pollInterval) { clearInterval(pollInterval); pollInterval = null; } }
-
-			function showDiagView() {
-				document.getElementById('sospc-view-waiting').style.display = 'none';
-				const v = document.getElementById('sospc-view-diag');
-				v.style.display = 'flex'; v.style.flexDirection = 'column';
-			}
-
-			function addMsg(role, text) {
-				const box = document.getElementById('sospc-messages');
-				const div = document.createElement('div');
-				div.className = 'sospc-msg ' + role;
-				div.textContent = text;
-				box.appendChild(div);
-				box.scrollTop = box.scrollHeight;
-				return div;
-			}
-
-			function renderHistory() {
-				const box = document.getElementById('sospc-messages');
-				box.innerHTML = '';
-				chatHistory.forEach(m => {
-					const div = document.createElement('div');
-					div.className = 'sospc-msg ' + (m.role === 'user' ? 'user' : 'bot');
-					div.textContent = m.content;
-					box.appendChild(div);
-				});
-				box.scrollTop = box.scrollHeight;
-			}
-
-			function setScore(score) {
-				const fill = document.getElementById('sospc-score-fill');
-				fill.style.background = score >= 70 ? '#1D9E75' : score >= 40 ? '#BA7517' : '#E24B4A';
-				document.getElementById('sospc-score-val').textContent = score + '/100';
-				setTimeout(() => fill.style.width = score + '%', 100);
-			}
-
-			function showSuggestions(items) {
-				const wrap = document.getElementById('sospc-suggestions');
-				wrap.innerHTML = '';
-				items.forEach(text => {
-					const btn = document.createElement('button');
-					btn.className = 'sospc-suggestion'; btn.textContent = text;
-					btn.onclick = () => { wrap.innerHTML = ''; document.getElementById('sospc-input').value = text; sospcSend(); };
-					wrap.appendChild(btn);
-				});
-			}
-
-			function runAnalysis() {
-				showDiagView();
-				document.getElementById('sospc-header-sub').textContent = 'Analyse en cours...';
-				const typing = addMsg('bot typing', 'Analyse de votre PC en cours...');
-				fetch('https://sos-pc-diagnostic.netlify.app/api/analyze', {
-					method: 'POST', headers: {'Content-Type': 'application/json'},
-					body: JSON.stringify({data: diagData, problem: ''})
-				})
-				.then(r => r.json())
-				.then(json => {
-					diagReport = json.report; typing.remove();
-					setScore(diagReport?.score || 50);
-					document.getElementById('sospc-header-sub').textContent = 'Diagnostic terminé';
-					document.getElementById('sospc-fab-text').textContent = 'Voir le diagnostic';
-					const summary = diagReport?.summary || 'Analyse terminée.';
-					addMsg('bot', summary); chatHistory.push({role:'assistant', content: summary});
-					const crits = (diagReport?.issues||[]).filter(i => i.level==='critical');
-					if (crits.length) {
-						const msg = '⚠️ ' + crits.length + ' problème(s) critique(s) : ' + crits.map(i=>i.title).join(', ') + '.';
-						addMsg('bot', msg); chatHistory.push({role:'assistant', content: msg});
-					}
-					if ((diagReport?.issues||[]).some(i => i.level !== 'ok')) {
-						const cta = 'Nos techniciens peuvent résoudre ces problèmes. Voulez-vous être contacté ?';
-						addMsg('bot', cta); chatHistory.push({role:'assistant', content: cta});
-					}
-					showSuggestions(['Expliquer le problème principal', 'Améliorer les performances', 'Contacter SOS-PC']);
-					save();
-				})
-				.catch(() => {
-					typing.remove();
-					addMsg('bot', 'Erreur d\'analyse. Contactez-nous au 07 69 56 14 91.');
-					document.getElementById('sospc-header-sub').textContent = 'Erreur';
-				});
-			}
-
-			window.sospcSend = function() {
-				const input = document.getElementById('sospc-input');
-				const msg = input.value.trim();
-				if (!msg) return;
-				input.value = '';
-				document.getElementById('sospc-send').disabled = true;
-				document.getElementById('sospc-suggestions').innerHTML = '';
-				addMsg('user', msg); chatHistory.push({role:'user', content: msg});
-				const typing = addMsg('bot typing', '...');
-				fetch('https://sos-pc-diagnostic.netlify.app/api/chat', {
-					method: 'POST', headers: {'Content-Type': 'application/json'},
-					body: JSON.stringify({messages: chatHistory, systemData: diagData, report: diagReport})
-				})
-				.then(r => r.json())
-				.then(json => {
-					typing.remove();
-					const reply = json.message || 'Désolé, une erreur est survenue.';
-					addMsg('bot', reply); chatHistory.push({role:'assistant', content: reply}); save();
-				})
-				.catch(() => { typing.remove(); addMsg('bot', 'Erreur de connexion.'); })
-				.finally(() => { document.getElementById('sospc-send').disabled = false; input.focus(); });
-			};
-
-			document.addEventListener('DOMContentLoaded', function() {
-				initDrag();
-				restorePos();
-				const saved = load();
-				if (saved && saved.diagData) {
-					diagData = saved.diagData; diagReport = saved.diagReport; chatHistory = saved.chatHistory || [];
-					showDiagView();
-					if (diagReport) setScore(diagReport.score || 50);
-					renderHistory();
-					if (diagReport) showSuggestions(['Rappelle-moi le résumé', 'Améliorer les performances', 'Contacter SOS-PC']);
-					document.getElementById('sospc-header-sub').textContent = 'Diagnostic sauvegardé';
-					document.getElementById('sospc-fab-text').textContent = 'Voir le diagnostic';
-					document.getElementById('sospc-fab-badge').style.display = 'flex';
-				} else {
-					sessionId = genId();
-					document.getElementById('sospc-cmd').textContent = buildCmd(sessionId);
-				}
-			});
-		})();
-		</script>
-
-</body>
+    <!-- ===== SOS-PC ASSISTANT FLOTTANT v7 ===== -->
+    <div id="sospc-widget" class="sospc-closed">
+      <div id="sospc-fab-content">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <span id="sospc-fab-text">Diagnostic PC</span>
+        <span id="sospc-fab-badge" style="display:none">!</span>
+      </div>
+      <div id="sospc-panel-content">
+        <div id="sospc-header">
+          <div>
+            <span id="sospc-header-title">Assistant SOS-PC</span>
+            <span id="sospc-header-sub">Diagnostic intelligent</span>
+          </div>
+          <div style="display:flex;gap:6px;align-items:center;">
+            <button id="sospc-reset-btn" onclick="sospcReset()" title="Nouveau scan">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg>
+              Nouveau scan
+            </button>
+            <button id="sospc-close-btn" onclick="sospcToggle()" aria-label="Fermer">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+        </div>
+        <div id="sospc-view-waiting">
+          <div id="sospc-waiting-body">
+            <p id="sospc-intro-title">Analysez votre PC gratuitement</p>
+            <p id="sospc-intro-desc">Notre IA détecte les problèmes de performance, les erreurs système et vous donne des conseils personnalisés.</p>
+            <div id="sospc-steps">
+              <div class="sospc-step"><span class="sospc-step-n">1</span><span>Ouvrez le Terminal (<kbd>Win</kbd>+<kbd>X</kbd> → Terminal)</span></div>
+              <div class="sospc-step"><span class="sospc-step-n">2</span><span>Copiez et collez cette commande :</span></div>
+            </div>
+            <div id="sospc-cmd-box">
+              <code id="sospc-cmd">chargement...</code>
+              <button id="sospc-copy-btn" onclick="sospcCopy()">Copier</button>
+            </div>
+            <div class="sospc-step"><span class="sospc-step-n">3</span><span>Restez sur cette page — le diagnostic apparaît automatiquement ici !</span></div>
+            <div id="sospc-waiting-indicator" style="display:none;"><div id="sospc-pulse"></div><span>En attente des données...</span></div>
+            <p id="sospc-privacy">🔒 Aucun fichier personnel collecté.</p>
+          </div>
+        </div>
+        <div id="sospc-view-diag" style="display:none;flex-direction:column;">
+          <div id="sospc-score-wrap">
+            <span id="sospc-score-lbl">Santé du PC</span>
+            <div id="sospc-score-track"><div id="sospc-score-fill"></div></div>
+            <span id="sospc-score-val">—</span>
+          </div>
+          <div id="sospc-messages"></div>
+          <div id="sospc-suggestions"></div>
+          <div id="sospc-input-wrap">
+            <input id="sospc-input" type="text" placeholder="Posez une question..." onkeydown="if(event.key==='Enter')sospcSend()" />
+            <button id="sospc-send" onclick="sospcSend()">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
 </html>
-<style define:vars={{ maxNavbarHeight }} is:global>
-	:root {
-		--accent: 136, 58, 234;
-		--accent-light: 224, 204, 250;
-		--accent-dark: 49, 10, 101;
-		--accent-gradient: linear-gradient(
-			45deg,
-			rgb(var(--accent)),
-			rgb(var(--accent-light)) 30%,
-			white 60%
-		);
 
-		/* Light Theme Variables (Default) */
-		--bg-color: #F0F2F5; /* Light grey background */
-		--text-color: #1c1e21; /* Dark grey text */
-		--card-bg-color: #FFFFFF; /* White card background */
-		--card-text-color: #333333;
-		--border-color: #d1d5db; /* Light border color */
-		--navbar-bg-color: rgba(255, 255, 255, 0.85);
-		--navbar-border-color: #e5e7eb;
-		--navbar-link-color: #374151;
-		--footer-bg-color: rgba(243, 244, 246, 0.9);
-		--footer-text-color: #4b5563;
-		--theme-icon-color: #1c1e21; /* Icon color for light theme */
-		--main-bg-color: rgba(255, 255, 255, 0.95); /* Main content background for light theme */
-		--heading-color: rgb(var(--accent-dark)); /* Darker accent for headings in light mode */
-		--link-color: rgb(var(--accent));
-		--code-bg: rgba(var(--accent-dark), 0.1);
-		--code-color: rgb(var(--accent-dark));
-		--section-hover-bg: rgba(0, 0, 0, 0.03);
-		--section-separator-color: rgb(var(--accent-dark));
-		--button-bg-color: rgb(var(--accent));
-		--button-text-color: white;
-		--button-hover-bg-color: rgb(var(--accent-dark));
-		--input-bg-color: #f9fafb;
-		--input-text-color: #111827;
-		--input-border-color: #d1d5db;
-		--input-focus-border-color: rgb(var(--accent));
-		--input-focus-shadow-color: rgba(var(--accent), 0.3);
-		--contact-button-bg: #e5e7eb;
-		--contact-button-text: #1f2937;
-		--contact-button-border: #d1d5db;
-		--contact-button-hover-bg: #d1d5db;
+<style is:global>
+  /* ===========================
+     TOKYO NIGHT — PALETTE
+  =========================== */
+  :root {
+    --bg:          #1a1b26;
+    --bg-card:     #24283b;
+    --bg-elevated: #2a2e42;
+    --bg-overlay:  #1e2030;
+    --border:      #3b4261;
+    --border-glow: #00d4aa;
+    --text:        #c0caf5;
+    --text-muted:  #7982a9;
+    --text-dim:    #565f89;
+    --accent:      0, 212, 170;
+    --accent-hex:  #00d4aa;
+    --accent-dim:  #004d3f;
+    --accent-light: 150, 255, 230;
+    --accent-dark: 0, 100, 80;
+    --yellow:      #e0af68;
+    --red:         #f7768e;
+    --blue:        #7aa2f7;
+    --purple:      #bb9af7;
+    --orange:      #ff9e64;
+    --navbar-h:    64px;
+    --maxNavbarHeight: 64px;
+    --font-mono:   'JetBrains Mono', monospace;
+    --font-body:   'Outfit', sans-serif;
+    --radius:      6px;
+    --radius-lg:   12px;
+    /* Legacy compat */
+    --bg-color:         var(--bg);
+    --text-color:       var(--text);
+    --card-bg-color:    var(--bg-card);
+    --card-text-color:  var(--text);
+    --border-color:     var(--border);
+    --heading-color:    var(--accent-hex);
+    --button-bg-color:  rgb(var(--accent));
+    --section-separator-color: var(--accent-hex);
+    --navbar-bg-color:  rgba(26, 27, 38, 0.92);
+    --input-focus-border-color: var(--accent-hex);
+    --input-focus-shadow-color: rgba(0, 212, 170, 0.2);
+    --scroll-padding-top: var(--navbar-h);
+  }
 
-		/* Original Dark Theme Gradient Colors (can be used for ASCII background or specific elements) */
-		--gradient-color-1: #1A0F2A;
-		--gradient-color-2: #301E59;
-		--gradient-color-3: #4A2F8C;
-		--gradient-color-4: #251A40;
-	}
+  /* Light mode — même palette, SOS-PC est dark-first */
+  html:not(.dark) {
+    --bg:          #f0f4f8;
+    --bg-card:     #ffffff;
+    --bg-elevated: #e8edf2;
+    --border:      #c8d0dc;
+    --text:        #1a1b26;
+    --text-muted:  #565f89;
+    --text-dim:    #7982a9;
+    --accent-hex:  #007a62;
+    --accent-dim:  #d0f0ea;
+    --bg-color:    #f0f4f8;
+    --navbar-bg-color: rgba(240, 244, 248, 0.92);
+    --card-bg-color: #ffffff;
+    --border-color: #c8d0dc;
+    --heading-color: #007a62;
+  }
 
-	html.dark {
-		/* Dark Theme Variables */
-		--bg-color: var(--gradient-color-1); /* Using one of the dark purples for base */
-		--text-color: #e0e0e0; /* Light grey text for dark mode */
-		--card-bg-color: #23262d; /* Dark card background */
-		--card-text-color: #c0c0c0;
-		--border-color: #444; /* Darker border color */
-		--navbar-bg-color: rgba(35, 38, 45, 0.9);
-		--navbar-border-color: #444;
-		--navbar-link-color: #e0e0e0;
-		--footer-bg-color: rgba(35, 38, 45, 0.85);
-		--footer-text-color: #a0a0a0;
-		--theme-icon-color: white; /* Icon color for dark theme */
-		--main-bg-color: rgba(19, 21, 26, 0.85); /* Main content background for dark theme */
-		--heading-color: rgb(var(--accent-light)); /* Lighter accent for headings in dark mode */
-		--link-color: rgb(var(--accent-light));
-		--code-bg: rgba(var(--accent-light), 0.12);
-		--code-color: rgb(var(--accent-light));
-		--section-hover-bg: rgba(35, 38, 45, 0.3);
-		--section-separator-color: rgb(var(--accent));
-		--button-bg-color: rgb(var(--accent));
-		--button-text-color: white;
-		--button-hover-bg-color: rgb(var(--accent-dark));
-		--input-bg-color: #1a1c22;
-		--input-text-color: white;
-		--input-border-color: #444;
-		--input-focus-border-color: rgb(var(--accent-light));
-		--input-focus-shadow-color: rgba(var(--accent-light), 0.4);
-		--contact-button-bg: #333;
-		--contact-button-text: white;
-		--contact-button-border: #555;
-		--contact-button-hover-bg: #444;
-	}
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-	/* Define the animation */
-	@keyframes gradientAnimation {
-		0% { background-position: 0% 50%; }
-		50% { background-position: 100% 50%; }
-		100% { background-position: 0% 50%; }
-	}
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: var(--navbar-h);
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
 
-	html {
-		font-family: system-ui, sans-serif;
-		background-color: var(--bg-color); /* Use CSS variable */
-		color: var(--text-color); /* Use CSS variable */
-		line-height: 1.6;
-		transition: background-color 0.3s ease, color 0.3s ease;
-	}
-	body {
-		display: flex;
-		flex-direction: column;
-		min-height: 100vh;
-		margin: 0;
-		padding-top: var(--maxNavbarHeight);
-    /* AsciiBackground will handle its own background, body can have a fallback */
-    background-color: var(--bg-color); /* Fallback if AsciiBackground is transparent or fails */
-	}
-	main {
-		flex-grow: 1;
-		margin: 0 auto;
-		padding: 1.5rem;
-		width: 100%;
-		max-width: 120ch; /* UPDATED: Decreased max-width from 140ch to 120ch */
-		box-sizing: border-box;
-		background-color: var(--main-bg-color); /* Use CSS variable */
-		border-radius: 8px;
-		margin-top: 2rem;
-		margin-bottom: 2rem;
-		box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  body {
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Grid background overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,212,170,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,170,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  main {
     position: relative;
     z-index: 1;
-		transition: background-color 0.3s ease;
-	}
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+  }
 
-	footer {
-		background-color: var(--footer-bg-color); /* Use CSS variable */
-		padding: 1rem 1.5rem;
-		text-align: center;
-		font-size: 0.9em;
-		color: var(--footer-text-color); /* Use CSS variable */
-    position: relative;
-    z-index: 1;
-		transition: background-color 0.3s ease, color 0.3s ease;
-	}
-	h1, h2, h3, h4, h5, h6 {
-		color: var(--heading-color); /* Use CSS variable */
-		margin-top: 1.5em;
-		margin-bottom: 0.5em;
-		transition: color 0.3s ease;
-	}
-	h1 {
-		font-size: 2.5rem;
-		text-align: center;
-		margin-top: 0;
-	}
-	h2 {
-		font-size: 1.8rem;
-	}
-	h3 {
-		font-size: 1.4rem;
-	}
-	p {
-		margin-bottom: 1em;
-	}
-	ul {
-		list-style: disc;
-		padding-left: 1.5rem;
-	}
-	a {
-		color: var(--link-color);
-		transition: color 0.3s ease;
-	}
-	a:hover {
-		color: var(--accent-dark); /* Consider a hover variable if needed */
-	}
-	html.dark a:hover {
-		color: white; /* Brighter hover for dark mode links */
-	}
+  .mono { font-family: var(--font-mono); }
 
-	code {
-		font-family:
-			Menlo,
-			Monaco,
-			Lucida Console,
-			Liberation Mono,
-			DejaVu Sans Mono,
-			Bitstream Vera Sans Mono,
-			Courier New,
-			monospace;
-		background: var(--code-bg); /* Use CSS variable */
-		color: var(--code-color); /* Use CSS variable */
-		border-radius: 4px;
-		padding: 0.3em 0.4em;
-		font-size: 0.9em;
-		transition: background-color 0.3s ease, color 0.3s ease;
-	}
+  h1, h2, h3 {
+    font-family: var(--font-body);
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.2;
+  }
 
-	/* Responsive Font Size Adjustments */
-	@media (max-width: 640px) {
-		h1 { font-size: 2rem; }
-		h2 { font-size: 1.6rem; }
-		h3 { font-size: 1.2rem; }
-		body { font-size: 0.95rem; }
-		main {
-			margin-top: 1rem;
-			margin-bottom: 1rem;
-			padding: 1rem;
-			max-width: 95%; /* On small screens, use percentage for better fit */
-		}
-	}
+  a { color: var(--accent-hex); text-decoration: none; transition: opacity 0.2s; }
+  a:hover { opacity: 0.8; }
+
+  footer {
+    position: relative; z-index: 1;
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-dim);
+    font-size: 13px;
+    border-top: 1px solid var(--border);
+    font-family: var(--font-mono);
+  }
+
+  /* Section separators */
+  section {
+    padding: 5rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+  section:last-of-type { border-bottom: none; }
+
+  /* Teal glow utility */
+  .glow {
+    box-shadow: 0 0 20px rgba(0, 212, 170, 0.15), 0 0 40px rgba(0, 212, 170, 0.05);
+  }
+  .glow-text {
+    text-shadow: 0 0 20px rgba(0, 212, 170, 0.4);
+  }
+
+  /* Tag/badge */
+  .tag {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-family: var(--font-mono);
+    font-size: 11px; font-weight: 500;
+    padding: 3px 10px;
+    border-radius: 3px;
+    border: 1px solid;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .tag-teal { color: var(--accent-hex); border-color: var(--accent-hex); background: rgba(0,212,170,0.08); }
+  .tag-yellow { color: var(--yellow); border-color: var(--yellow); background: rgba(224,175,104,0.08); }
+  .tag-blue { color: var(--blue); border-color: var(--blue); background: rgba(122,162,247,0.08); }
+  .tag-red { color: var(--red); border-color: var(--red); background: rgba(247,118,142,0.08); }
+  .tag-purple { color: var(--purple); border-color: var(--purple); background: rgba(187,154,247,0.08); }
+
+  /* CTA Button */
+  .btn-primary {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgb(var(--accent));
+    color: #1a1b26;
+    border: none;
+    border-radius: var(--radius);
+    padding: 11px 24px;
+    font-size: 14px; font-weight: 600;
+    font-family: var(--font-mono);
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+  }
+  .btn-primary:hover {
+    background: rgba(var(--accent), 0.85);
+    color: #1a1b26;
+    opacity: 1;
+    box-shadow: 0 0 20px rgba(0, 212, 170, 0.3);
+    transform: translateY(-1px);
+  }
+
+  .btn-ghost {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: transparent;
+    color: var(--accent-hex);
+    border: 1px solid var(--accent-hex);
+    border-radius: var(--radius);
+    padding: 11px 24px;
+    font-size: 14px; font-weight: 500;
+    font-family: var(--font-mono);
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+  }
+  .btn-ghost:hover {
+    background: rgba(0,212,170,0.08);
+    opacity: 1;
+    box-shadow: 0 0 15px rgba(0, 212, 170, 0.15);
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--accent-hex); }
+
+  /* ===========================
+     CHATBOT — Tokyo Night theme
+  =========================== */
+  body.cover-active #sospc-widget { opacity: 0; pointer-events: none; }
+
+  #sospc-widget {
+    position: fixed; bottom: 24px; right: 24px; z-index: 9999;
+    font-family: var(--font-body);
+    transform-origin: bottom right;
+    transition: width 0.38s cubic-bezier(0.34,1.3,0.64,1), border-radius 0.38s cubic-bezier(0.34,1.3,0.64,1), box-shadow 0.38s ease, background 0.2s ease;
+  }
+  #sospc-widget.sospc-snapping {
+    transition: left 0.32s cubic-bezier(0.34,1.2,0.64,1), top 0.32s cubic-bezier(0.34,1.2,0.64,1), width 0.38s cubic-bezier(0.34,1.3,0.64,1), border-radius 0.38s cubic-bezier(0.34,1.3,0.64,1), box-shadow 0.38s ease, background 0.2s ease;
+  }
+  #sospc-widget.sospc-dragging { transition: none !important; user-select: none; }
+  #sospc-widget.sospc-closed {
+    width: auto; border-radius: 4px;
+    background: var(--bg-card);
+    border: 1px solid var(--accent-hex);
+    box-shadow: 0 0 16px rgba(0,212,170,0.2);
+    overflow: hidden; cursor: pointer;
+  }
+  #sospc-widget.sospc-closed:not(.sospc-dragging):hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 24px rgba(0,212,170,0.35);
+  }
+  #sospc-widget.sospc-open {
+    width: 360px; border-radius: var(--radius-lg);
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    box-shadow: 0 8px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(0,212,170,0.1);
+    overflow: hidden; cursor: default;
+  }
+  #sospc-fab-content {
+    display: flex; align-items: center; gap: 8px;
+    padding: 11px 18px; color: var(--accent-hex);
+    font-size: 13px; font-weight: 600; font-family: var(--font-mono);
+    white-space: nowrap; user-select: none; touch-action: none;
+  }
+  #sospc-widget.sospc-open #sospc-fab-content { display: none; }
+  #sospc-fab-badge {
+    background: var(--red); color: #1a1b26; border-radius: 3px;
+    width: 18px; height: 18px; font-size: 10px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-mono);
+  }
+  #sospc-panel-content {
+    display: none; flex-direction: column; opacity: 0;
+    transition: opacity 0.2s ease 0.15s; max-height: 80vh; overflow: hidden;
+  }
+  #sospc-widget.sospc-open #sospc-panel-content { display: flex; opacity: 1; }
+  #sospc-header {
+    background: var(--bg-elevated); padding: 12px 16px;
+    display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;
+    cursor: grab; user-select: none; touch-action: none;
+    border-bottom: 1px solid var(--accent-hex);
+  }
+  #sospc-header:active { cursor: grabbing; }
+  #sospc-header-title { display: block; color: var(--accent-hex); font-size: 13px; font-weight: 600; font-family: var(--font-mono); }
+  #sospc-header-sub { display: block; color: var(--text-muted); font-size: 11px; font-family: var(--font-mono); }
+  #sospc-close-btn, #sospc-reset-btn {
+    background: none; border: none; color: var(--text-muted); cursor: pointer;
+    opacity: 0.75; padding: 4px 8px; border-radius: var(--radius);
+    display: flex; align-items: center; gap: 5px; font-size: 11px; font-family: var(--font-mono);
+    transition: opacity 0.2s, background 0.2s;
+  }
+  #sospc-close-btn { padding: 4px; }
+  #sospc-close-btn:hover, #sospc-reset-btn:hover { opacity: 1; background: rgba(0,212,170,0.1); color: var(--accent-hex); }
+  #sospc-waiting-body { padding: 16px; overflow-y: auto; }
+  #sospc-intro-title { font-size: 14px; font-weight: 600; color: var(--text); margin: 0 0 6px; font-family: var(--font-mono); }
+  #sospc-intro-desc { font-size: 13px; color: var(--text-muted); margin: 0 0 14px; line-height: 1.5; }
+  #sospc-steps { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+  .sospc-step { display: flex; align-items: flex-start; gap: 10px; font-size: 13px; color: var(--text-muted); }
+  .sospc-step-n {
+    width: 20px; height: 20px; border-radius: 3px; background: rgba(0,212,170,0.15);
+    color: var(--accent-hex); font-size: 11px; font-weight: 700; font-family: var(--font-mono);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    border: 1px solid rgba(0,212,170,0.3);
+  }
+  .sospc-step kbd {
+    background: var(--bg-elevated); border: 1px solid var(--border);
+    border-radius: 3px; padding: 1px 5px; font-size: 11px; font-family: var(--font-mono); color: var(--text);
+  }
+  #sospc-cmd-box {
+    background: #0d0e14; border-radius: var(--radius); border: 1px solid var(--border);
+    padding: 10px 12px; display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
+  }
+  #sospc-cmd { color: var(--accent-hex); font-size: 12px; font-family: var(--font-mono); flex: 1; word-break: break-all; }
+  #sospc-copy-btn {
+    background: rgba(0,212,170,0.15); color: var(--accent-hex);
+    border: 1px solid rgba(0,212,170,0.3); border-radius: var(--radius);
+    padding: 5px 10px; font-size: 11px; font-family: var(--font-mono); cursor: pointer; flex-shrink: 0; transition: background 0.2s;
+  }
+  #sospc-copy-btn:hover { background: rgba(0,212,170,0.3); }
+  #sospc-copy-btn.copied { background: rgba(0,212,170,0.3); }
+  #sospc-waiting-indicator {
+    display: flex; align-items: center; gap: 10px;
+    background: rgba(0,212,170,0.05); border: 1px solid rgba(0,212,170,0.2);
+    border-radius: var(--radius); padding: 10px 14px; margin: 10px 0;
+    font-size: 12px; color: var(--text-muted); font-family: var(--font-mono);
+  }
+  #sospc-pulse {
+    width: 8px; height: 8px; border-radius: 50%; background: var(--accent-hex); flex-shrink: 0;
+    animation: sospc-pulse 1.4s ease-in-out infinite;
+  }
+  @keyframes sospc-pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.7)} }
+  #sospc-privacy { font-size: 11px; color: var(--text-dim); text-align: center; margin: 10px 0 0; font-family: var(--font-mono); }
+  #sospc-score-wrap {
+    display: flex; align-items: center; gap: 10px; padding: 10px 16px;
+    background: var(--bg-overlay); border-bottom: 1px solid var(--border); flex-shrink: 0;
+  }
+  #sospc-score-lbl { font-size: 11px; color: var(--text-muted); flex-shrink: 0; font-family: var(--font-mono); }
+  #sospc-score-track { flex: 1; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  #sospc-score-fill { height: 100%; border-radius: 2px; width: 0%; transition: width 1.2s ease; }
+  #sospc-score-val { font-size: 12px; font-weight: 700; color: var(--accent-hex); flex-shrink: 0; min-width: 40px; text-align: right; font-family: var(--font-mono); }
+  #sospc-messages {
+    flex: 1; overflow-y: auto; padding: 12px;
+    display: flex; flex-direction: column; gap: 8px; min-height: 100px; max-height: 260px;
+  }
+  .sospc-msg { max-width: 88%; padding: 9px 12px; border-radius: var(--radius); font-size: 13px; line-height: 1.5; }
+  .sospc-msg.user { background: rgba(0,212,170,0.15); color: var(--accent-hex); align-self: flex-end; border: 1px solid rgba(0,212,170,0.3); }
+  .sospc-msg.bot { background: var(--bg-elevated); color: var(--text); align-self: flex-start; border: 1px solid var(--border); }
+  .sospc-msg.typing { opacity: 0.6; font-style: italic; font-family: var(--font-mono); }
+  #sospc-suggestions { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 12px 10px; }
+  .sospc-suggestion {
+    background: rgba(0,212,170,0.08); color: var(--accent-hex);
+    border: 1px solid rgba(0,212,170,0.2); border-radius: var(--radius);
+    padding: 4px 10px; font-size: 11px; font-family: var(--font-mono); cursor: pointer; transition: background 0.2s;
+  }
+  .sospc-suggestion:hover { background: rgba(0,212,170,0.18); }
+  #sospc-input-wrap { display: flex; gap: 8px; padding: 10px 12px; border-top: 1px solid var(--border); flex-shrink: 0; }
+  #sospc-input {
+    flex: 1; background: var(--bg-overlay); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 8px 12px; font-size: 13px; color: var(--text); font-family: var(--font-mono);
+    outline: none; transition: border 0.2s;
+  }
+  #sospc-input:focus { border-color: var(--accent-hex); box-shadow: 0 0 8px rgba(0,212,170,0.15); }
+  #sospc-send {
+    background: var(--accent-hex); color: #1a1b26; border: none;
+    border-radius: var(--radius); width: 34px; height: 34px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    transition: all 0.2s;
+  }
+  #sospc-send:hover { box-shadow: 0 0 12px rgba(0,212,170,0.4); }
+  #sospc-send:active { transform: scale(0.95); }
+  #sospc-send:disabled { background: var(--border); color: var(--text-dim); cursor: default; box-shadow: none; }
+
+  @media (max-width: 480px) {
+    #sospc-widget.sospc-open { width: calc(100vw - 32px); }
+    #sospc-widget { bottom: 16px; right: 16px; }
+  }
 </style>
+
+<script>
+(function() {
+  const STORAGE_KEY = 'sospc_diagnostic_v1';
+  const POS_KEY     = 'sospc_position_v1';
+  const DRAG_THRESHOLD = 6;
+  const EDGE_MARGIN    = 16;
+  const PANEL_W        = 360;
+
+  let isOpen = false;
+  let diagData = null, diagReport = null, chatHistory = [];
+  let sessionId = null, pollInterval = null;
+  let dragStartX = 0, dragStartY = 0;
+  let dragOffsetX = 0, dragOffsetY = 0;
+  let dragMoved = false, isDragging = false;
+
+  function playPop() {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      [[880,440,0.18,0.25],[1320,660,0.08,0.18]].forEach(([f0,f1,vol,dur]) => {
+        const o = ctx.createOscillator(), g = ctx.createGain();
+        o.connect(g); g.connect(ctx.destination);
+        o.type = 'sine';
+        o.frequency.setValueAtTime(f0, ctx.currentTime);
+        o.frequency.exponentialRampToValueAtTime(f1, ctx.currentTime + dur * 0.5);
+        g.gain.setValueAtTime(0, ctx.currentTime);
+        g.gain.linearRampToValueAtTime(vol, ctx.currentTime + 0.01);
+        g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+        o.start(ctx.currentTime); o.stop(ctx.currentTime + dur);
+      });
+    } catch(e) {}
+  }
+
+  function gw() { return document.getElementById('sospc-widget'); }
+
+  function setPos(x, y, snap) {
+    const el = gw();
+    const rect = el.getBoundingClientRect();
+    const ww = window.innerWidth, wh = window.innerHeight;
+    x = Math.max(EDGE_MARGIN, Math.min(x, ww - rect.width - EDGE_MARGIN));
+    y = Math.max(EDGE_MARGIN, Math.min(y, wh - rect.height - EDGE_MARGIN));
+    if (snap) { el.classList.add('sospc-snapping'); setTimeout(() => el.classList.remove('sospc-snapping'), 400); }
+    el.style.right = 'auto'; el.style.bottom = 'auto';
+    el.style.left = x + 'px'; el.style.top = y + 'px';
+    try { localStorage.setItem(POS_KEY, JSON.stringify({x, y})); } catch(e) {}
+  }
+
+  function snapToEdge() {
+    const el = gw(), r = el.getBoundingClientRect();
+    const snapRight = (r.left + r.width / 2) > window.innerWidth / 2;
+    const tx = snapRight ? window.innerWidth - r.width - EDGE_MARGIN : EDGE_MARGIN;
+    setPos(tx, r.top, true);
+  }
+
+  function ensurePanelVisible() {
+    const el = gw(), r = el.getBoundingClientRect();
+    const ww = window.innerWidth, wh = window.innerHeight;
+    const pw = Math.min(PANEL_W, ww - EDGE_MARGIN * 2);
+    let x = r.left, y = r.top;
+    if (x + pw > ww - EDGE_MARGIN) x = ww - pw - EDGE_MARGIN;
+    if (x < EDGE_MARGIN) x = EDGE_MARGIN;
+    const ph = Math.min(520, wh * 0.8);
+    if (y + ph > wh - EDGE_MARGIN) y = wh - ph - EDGE_MARGIN;
+    if (y < EDGE_MARGIN) y = EDGE_MARGIN;
+    if (Math.abs(x - r.left) > 1 || Math.abs(y - r.top) > 1) setPos(x, y, true);
+  }
+
+  function restorePos() {
+    try {
+      const s = localStorage.getItem(POS_KEY);
+      if (!s) return;
+      const {x, y} = JSON.parse(s);
+      const el = gw();
+      el.style.right = 'auto'; el.style.bottom = 'auto';
+      el.style.left = x + 'px'; el.style.top = y + 'px';
+    } catch(e) {}
+  }
+
+  function initDrag() {
+    const handles = [document.getElementById('sospc-fab-content'), document.getElementById('sospc-header')];
+    handles.forEach(handle => {
+      handle.addEventListener('pointerdown', e => {
+        if (e.target.closest('button')) return;
+        e.preventDefault();
+        handle.setPointerCapture(e.pointerId);
+        const r = gw().getBoundingClientRect();
+        dragStartX = e.clientX; dragStartY = e.clientY;
+        dragOffsetX = e.clientX - r.left; dragOffsetY = e.clientY - r.top;
+        dragMoved = false; isDragging = true;
+        gw().classList.add('sospc-dragging');
+      });
+      handle.addEventListener('pointermove', e => {
+        if (!isDragging) return;
+        if (Math.abs(e.clientX - dragStartX) > DRAG_THRESHOLD || Math.abs(e.clientY - dragStartY) > DRAG_THRESHOLD) dragMoved = true;
+        if (!dragMoved) return;
+        setPos(e.clientX - dragOffsetX, e.clientY - dragOffsetY, false);
+      });
+      handle.addEventListener('pointerup', e => {
+        if (!isDragging) return;
+        isDragging = false;
+        gw().classList.remove('sospc-dragging');
+        handle.releasePointerCapture(e.pointerId);
+        if (dragMoved && !isOpen) snapToEdge();
+        if (!dragMoved) setTimeout(() => sospcToggle(), 10);
+        dragMoved = false;
+      });
+      handle.addEventListener('pointercancel', () => { isDragging = false; dragMoved = false; gw().classList.remove('sospc-dragging'); });
+    });
+  }
+
+  window.sospcToggle = function() {
+    const el = gw(); isOpen = !isOpen;
+    if (isOpen) {
+      el.classList.remove('sospc-closed'); el.classList.add('sospc-open');
+      setTimeout(ensurePanelVisible, 50);
+      if (!diagData && !pollInterval) startPolling();
+      if (diagData) setTimeout(() => { const i = document.getElementById('sospc-input'); if(i) i.focus(); }, 300);
+    } else {
+      el.classList.remove('sospc-open'); el.classList.add('sospc-closed');
+      setTimeout(snapToEdge, 50);
+    }
+    document.getElementById('sospc-fab-badge').style.display = 'none';
+  };
+
+  function save() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify({diagData, diagReport, chatHistory, savedAt: Date.now()})); } catch(e) {} }
+  function load() { try { const r = localStorage.getItem(STORAGE_KEY); return r ? JSON.parse(r) : null; } catch(e) { return null; } }
+  function clear() { try { localStorage.removeItem(STORAGE_KEY); } catch(e) {} }
+  function genId() { return Math.random().toString(36).slice(2,10).toUpperCase(); }
+  function buildCmd(sid) { return `$s='${sid}'; irm https://sos-pc.click/diag.ps1 | iex`; }
+
+  window.sospcCopy = function() {
+    navigator.clipboard.writeText(document.getElementById('sospc-cmd').textContent).then(() => {
+      const btn = document.getElementById('sospc-copy-btn');
+      btn.textContent = 'Copié !'; btn.classList.add('copied');
+      document.getElementById('sospc-waiting-indicator').style.display = 'flex';
+      setTimeout(() => { btn.textContent = 'Copier'; btn.classList.remove('copied'); }, 2500);
+    });
+  };
+
+  window.sospcReset = function() {
+    if (!confirm('Lancer un nouveau scan ?')) return;
+    stopPolling(); clear();
+    diagData = null; diagReport = null; chatHistory = [];
+    sessionId = genId();
+    document.getElementById('sospc-cmd').textContent = buildCmd(sessionId);
+    document.getElementById('sospc-view-diag').style.display = 'none';
+    document.getElementById('sospc-view-waiting').style.display = 'block';
+    document.getElementById('sospc-waiting-indicator').style.display = 'none';
+    document.getElementById('sospc-header-sub').textContent = 'Diagnostic intelligent';
+    document.getElementById('sospc-fab-text').textContent = 'Diagnostic PC';
+    document.getElementById('sospc-messages').innerHTML = '';
+    document.getElementById('sospc-suggestions').innerHTML = '';
+    startPolling();
+  };
+
+  function startPolling() {
+    if (pollInterval) return;
+    pollInterval = setInterval(async () => {
+      try {
+        const r = await fetch(`https://sos-pc-diagnostic.netlify.app/api/poll?s=${sessionId}`);
+        const json = await r.json();
+        if (json.ready && json.data) {
+          stopPolling(); diagData = json.data;
+          document.getElementById('sospc-waiting-indicator').style.display = 'none';
+          playPop();
+          if (!isOpen) { isOpen = true; gw().classList.remove('sospc-closed'); gw().classList.add('sospc-open'); setTimeout(ensurePanelVisible, 50); }
+          runAnalysis();
+        }
+      } catch(e) {}
+    }, 2000);
+  }
+  function stopPolling() { if (pollInterval) { clearInterval(pollInterval); pollInterval = null; } }
+
+  function showDiagView() {
+    document.getElementById('sospc-view-waiting').style.display = 'none';
+    const v = document.getElementById('sospc-view-diag');
+    v.style.display = 'flex'; v.style.flexDirection = 'column';
+  }
+
+  function addMsg(role, text) {
+    const box = document.getElementById('sospc-messages');
+    const div = document.createElement('div');
+    div.className = 'sospc-msg ' + role; div.textContent = text;
+    box.appendChild(div); box.scrollTop = box.scrollHeight; return div;
+  }
+
+  function renderHistory() {
+    const box = document.getElementById('sospc-messages'); box.innerHTML = '';
+    chatHistory.forEach(m => { const div = document.createElement('div'); div.className = 'sospc-msg ' + (m.role === 'user' ? 'user' : 'bot'); div.textContent = m.content; box.appendChild(div); });
+    box.scrollTop = box.scrollHeight;
+  }
+
+  function setScore(score) {
+    const fill = document.getElementById('sospc-score-fill');
+    fill.style.background = score >= 70 ? '#00d4aa' : score >= 40 ? '#e0af68' : '#f7768e';
+    document.getElementById('sospc-score-val').textContent = score + '/100';
+    setTimeout(() => fill.style.width = score + '%', 100);
+  }
+
+  function showSuggestions(items) {
+    const wrap = document.getElementById('sospc-suggestions'); wrap.innerHTML = '';
+    items.forEach(text => {
+      const btn = document.createElement('button'); btn.className = 'sospc-suggestion'; btn.textContent = text;
+      btn.onclick = () => { wrap.innerHTML = ''; document.getElementById('sospc-input').value = text; sospcSend(); };
+      wrap.appendChild(btn);
+    });
+  }
+
+  function runAnalysis() {
+    showDiagView();
+    document.getElementById('sospc-header-sub').textContent = 'Analyse en cours...';
+    const typing = addMsg('bot typing', '> analyse en cours...');
+    fetch('https://sos-pc-diagnostic.netlify.app/api/analyze', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({data: diagData, problem: ''}) })
+    .then(r => r.json())
+    .then(json => {
+      diagReport = json.report; typing.remove();
+      setScore(diagReport?.score || 50);
+      document.getElementById('sospc-header-sub').textContent = 'Diagnostic terminé';
+      document.getElementById('sospc-fab-text').textContent = 'Voir le diagnostic';
+      const summary = diagReport?.summary || 'Analyse terminée.';
+      addMsg('bot', summary); chatHistory.push({role:'assistant', content: summary});
+      const crits = (diagReport?.issues||[]).filter(i => i.level==='critical');
+      if (crits.length) { const msg = '⚠ ' + crits.length + ' problème(s) critique(s) : ' + crits.map(i=>i.title).join(', ') + '.'; addMsg('bot', msg); chatHistory.push({role:'assistant', content: msg}); }
+      if ((diagReport?.issues||[]).some(i => i.level !== 'ok')) { const cta = 'Nos techniciens peuvent résoudre ces problèmes. Voulez-vous être contacté ?'; addMsg('bot', cta); chatHistory.push({role:'assistant', content: cta}); }
+      showSuggestions(['Expliquer le problème', 'Améliorer les perfs', 'Contacter SOS-PC']);
+      save();
+    })
+    .catch(() => { typing.remove(); addMsg('bot', 'Erreur d\'analyse. Contactez-nous au 07 69 56 14 91.'); });
+  }
+
+  window.sospcSend = function() {
+    const input = document.getElementById('sospc-input');
+    const msg = input.value.trim(); if (!msg) return;
+    input.value = ''; document.getElementById('sospc-send').disabled = true;
+    document.getElementById('sospc-suggestions').innerHTML = '';
+    addMsg('user', msg); chatHistory.push({role:'user', content: msg});
+    const typing = addMsg('bot typing', '...');
+    fetch('https://sos-pc-diagnostic.netlify.app/api/chat', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({messages: chatHistory, systemData: diagData, report: diagReport}) })
+    .then(r => r.json())
+    .then(json => { typing.remove(); const reply = json.message || 'Erreur.'; addMsg('bot', reply); chatHistory.push({role:'assistant', content: reply}); save(); })
+    .catch(() => { typing.remove(); addMsg('bot', 'Erreur de connexion.'); })
+    .finally(() => { document.getElementById('sospc-send').disabled = false; input.focus(); });
+  };
+
+  document.addEventListener('DOMContentLoaded', function() {
+    initDrag(); restorePos();
+    const saved = load();
+    if (saved && saved.diagData) {
+      diagData = saved.diagData; diagReport = saved.diagReport; chatHistory = saved.chatHistory || [];
+      showDiagView();
+      if (diagReport) setScore(diagReport.score || 50);
+      renderHistory();
+      if (diagReport) showSuggestions(['Rappelle-moi le résumé', 'Améliorer les perfs', 'Contacter SOS-PC']);
+      document.getElementById('sospc-header-sub').textContent = 'Diagnostic sauvegardé';
+      document.getElementById('sospc-fab-text').textContent = 'Voir le diagnostic';
+      document.getElementById('sospc-fab-badge').style.display = 'flex';
+    } else {
+      sessionId = genId();
+      document.getElementById('sospc-cmd').textContent = buildCmd(sessionId);
+    }
+  });
+})();
+</script>
