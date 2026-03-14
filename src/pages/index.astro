@@ -624,7 +624,7 @@ const portfolioItems = [
   document.querySelectorAll(".service-card-new, .portfolio-card, .info-card, .stat").forEach(function(el, i) {
     el.style.opacity = "0";
     el.style.transform = "translateY(20px)";
-    el.style.transition = "opacity 0.45s ease " + (i * 0.04) + "s, transform 0.45s ease " + (i * 0.04) + "s";
+    el.style.transition = "opacity 0.45s ease " + (Math.min(i * 0.02, 0.15)) + "s, transform 0.45s ease " + (Math.min(i * 0.02, 0.15)) + "s";
     revealObserver.observe(el);
   });
 </script>
