@@ -507,17 +507,17 @@ const portfolioItems = [
     right: -20px;
     width: 160px;
     height: 160px;
-    opacity: 0.07;
+    opacity: 0.18;
     pointer-events: none;
     transition: opacity 0.4s ease, transform 0.4s ease;
     z-index: 0;
   }
-  .sc-lottie--teal   { filter: hue-rotate(0deg)   saturate(3) brightness(1.5); }
-  .sc-lottie--blue   { filter: hue-rotate(195deg)  saturate(3) brightness(1.5); }
-  .sc-lottie--purple { filter: hue-rotate(255deg)  saturate(3) brightness(1.5); }
-  /* Hover : l'animation se révèle légèrement et se déplace */
+  .sc-lottie--teal   { filter: hue-rotate(0deg)   saturate(2) brightness(1.3); }
+  .sc-lottie--blue   { filter: hue-rotate(195deg)  saturate(2) brightness(1.3); }
+  .sc-lottie--purple { filter: hue-rotate(255deg)  saturate(2) brightness(1.3); }
+  /* Hover : l'animation se révèle et se déplace */
   .service-card-new:hover .sc-lottie {
-    opacity: 0.15;
+    opacity: 0.5;
     transform: translate(-6px, -6px);
   }
 
@@ -672,13 +672,19 @@ const portfolioItems = [
       document.querySelectorAll('[data-lottie-src]').forEach(function(el) {
         var src = el.getAttribute('data-lottie-src');
         if (!src) return;
-        lottie.loadAnimation({
+        var anim = lottie.loadAnimation({
           container: el,
           renderer: 'svg',
           loop: true,
-          autoplay: true,
+          autoplay: false,
           path: src
         });
+        // Trouver la carte parente et brancher les events hover
+        var card = el.closest('.service-card-new');
+        if (card) {
+          card.addEventListener('mouseenter', function() { anim.play(); });
+          card.addEventListener('mouseleave', function() { anim.pause(); });
+        }
       });
     };
     document.head.appendChild(script);

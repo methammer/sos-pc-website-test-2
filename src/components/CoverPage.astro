@@ -2,13 +2,36 @@
 const coverPageId = "sos-pc-cover-page";
 ---
 <div id={coverPageId} class="cover-page" aria-labelledby="cover-heading" role="dialog" aria-modal="true">
+
+  <!-- Grid background pattern -->
+  <div class="cover-grid" aria-hidden="true"></div>
+
+  <!-- Glow orbs -->
+  <div class="cover-orb cover-orb--1" aria-hidden="true"></div>
+  <div class="cover-orb cover-orb--2" aria-hidden="true"></div>
+
   <div class="cover-content">
-    <img src="/logo.png" alt="SOS-PC Company Logo" class="logo" />
-    <h1 id="cover-heading" class="brand-name">SOS-PC</h1>
-    <p class="tagline">Unlocking Your Tech Potential</p>
-    <div class="interaction-cue" role="button" tabindex="0" aria-label="Swipe up, scroll, or press Enter to explore">
-      <span class="cue-text">Swipe up or scroll to explore</span>
-      <svg class="arrow-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="32" height="32" aria-hidden="true">
+    <!-- Badge terminal -->
+    <div class="cover-badge">
+      <span class="cover-dot"></span>
+      <span class="cover-badge-text mono">sos-pc.sh — v2.0</span>
+    </div>
+
+    <img src="/logo.png" alt="SOS-PC Logo" class="logo" />
+
+    <h1 id="cover-heading" class="brand-name mono">SOS-PC</h1>
+    <p class="tagline">Votre partenaire tech de confiance</p>
+
+    <!-- Terminal line décorative -->
+    <div class="cover-terminal-line mono">
+      <span class="cover-prompt">$</span>
+      <span class="cover-cmd"> initializing services</span>
+      <span class="cover-cursor">_</span>
+    </div>
+
+    <div class="interaction-cue" role="button" tabindex="0" aria-label="Swiper vers le haut ou défiler pour explorer">
+      <span class="cue-text mono">// scroll to explore</span>
+      <svg class="arrow-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="28" height="28" aria-hidden="true">
         <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z" transform="rotate(-90 12 12)"/>
       </svg>
     </div>
@@ -16,14 +39,13 @@ const coverPageId = "sos-pc-cover-page";
 </div>
 
 <style>
+  /* ===== COVER PAGE — TOKYO NIGHT ===== */
   .cover-page {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: linear-gradient(135deg, var(--gradient-color-1, #1A0F2A), var(--gradient-color-2, #301E59));
-    color: white;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    background: #1a1b26;
+    color: #c0caf5;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -33,7 +55,8 @@ const coverPageId = "sos-pc-cover-page";
     visibility: visible;
     transform: translateY(0);
     transition: opacity 0.7s cubic-bezier(0.25, 1, 0.5, 1), transform 0.7s cubic-bezier(0.25, 1, 0.5, 1), visibility 0s linear 0s;
-    user-select: none; /* Prevent text selection during drag */
+    user-select: none;
+    overflow: hidden;
   }
 
   .cover-page.dismissed {
@@ -44,82 +67,162 @@ const coverPageId = "sos-pc-cover-page";
     pointer-events: none;
   }
 
+  /* --- Grid pattern (comme le body::before du site) --- */
+  .cover-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0, 212, 170, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 212, 170, 0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+  }
+
+  /* --- Glow orbs --- */
+  .cover-orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    pointer-events: none;
+  }
+  .cover-orb--1 {
+    width: 400px; height: 400px;
+    background: rgba(0, 212, 170, 0.08);
+    top: -100px; left: -100px;
+    animation: orb-drift 12s ease-in-out infinite alternate;
+  }
+  .cover-orb--2 {
+    width: 300px; height: 300px;
+    background: rgba(122, 162, 247, 0.07);
+    bottom: -80px; right: -80px;
+    animation: orb-drift 15s ease-in-out infinite alternate-reverse;
+  }
+  @keyframes orb-drift {
+    from { transform: translate(0, 0); }
+    to   { transform: translate(30px, 20px); }
+  }
+
+  /* --- Badge --- */
+  .cover-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(0, 212, 170, 0.08);
+    border: 1px solid rgba(0, 212, 170, 0.2);
+    border-radius: 20px;
+    padding: 5px 14px;
+    margin-bottom: 2rem;
+    font-size: 12px;
+    color: #00d4aa;
+  }
+  .cover-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #00d4aa;
+    box-shadow: 0 0 6px #00d4aa;
+    animation: pulse-dot 2s ease-in-out infinite;
+  }
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+  .cover-badge-text { color: #00d4aa; }
+
+  /* --- Logo --- */
   .cover-content {
     text-align: center;
     animation: fadeInContent 1.2s ease-out 0.3s forwards;
     opacity: 0;
     padding: 20px;
+    position: relative;
+    z-index: 1;
   }
-
-  @keyframes fadeInContent {
-    to {
-      opacity: 1;
-    }
-  }
+  @keyframes fadeInContent { to { opacity: 1; } }
 
   .logo {
-    width: 20vw; /* Adjust this percentage as needed */
-    max-width: 150px; /* Optional: set a max size for very large screens */
-    min-width: 70px; /* Optional: set a min size for very small screens */
-    height: auto; /* Maintain aspect ratio */
-    margin-bottom: 1.5rem; /* Increased margin a bit */
-    object-fit: contain; 
+    width: clamp(60px, 12vw, 100px);
+    height: auto;
+    margin-bottom: 1.25rem;
+    object-fit: contain;
+    filter: drop-shadow(0 0 20px rgba(0, 212, 170, 0.3));
   }
 
+  /* --- Titre --- */
   .brand-name {
-    font-size: clamp(2rem, 6vw, 3rem);
-    font-weight: bold;
+    font-size: clamp(2.4rem, 7vw, 4rem);
+    font-weight: 800;
     margin-bottom: 0.5rem;
-    color: white;
-    letter-spacing: 1px;
+    color: #c0caf5;
+    letter-spacing: 0.12em;
+    /* Dégradé teal sur le texte */
+    background: linear-gradient(135deg, #c0caf5 30%, #00d4aa 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 
   .tagline {
-    font-size: clamp(1rem, 3vw, 1.25rem);
-    margin-bottom: 3rem;
-    color: var(--accent-light, #e0e0e0);
-    opacity: 0.9;
+    font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+    margin-bottom: 2rem;
+    color: #7982a9;
+    font-family: 'Outfit', system-ui, sans-serif;
   }
 
+  /* --- Ligne terminal décorative --- */
+  .cover-terminal-line {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 13px;
+    background: rgba(13, 14, 20, 0.6);
+    border: 1px solid #3b4261;
+    border-radius: 6px;
+    padding: 7px 16px;
+    margin-bottom: 2.5rem;
+    color: #7982a9;
+  }
+  .cover-prompt { color: #00d4aa; font-weight: 700; }
+  .cover-cmd    { color: #c0caf5; }
+  .cover-cursor {
+    color: #00d4aa;
+    animation: blink 1s step-end infinite;
+    margin-left: 2px;
+  }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+  /* --- Cue scroll --- */
   .interaction-cue {
     display: inline-flex;
     flex-direction: column;
     align-items: center;
+    gap: 10px;
     cursor: pointer;
-    padding: 10px 15px;
+    padding: 10px 20px;
     border-radius: 8px;
-    transition: background-color 0.2s ease;
+    border: 1px solid transparent;
+    transition: border-color 0.2s, background 0.2s;
   }
+  .interaction-cue:hover,
   .interaction-cue:focus-visible {
-    background-color: rgba(255, 255, 255, 0.1);
-    outline: 2px solid var(--accent-light, #e0e0e0);
-    outline-offset: 2px;
-  }
-  .interaction-cue:hover {
-    background-color: rgba(255, 255, 255, 0.05);
+    background: rgba(0, 212, 170, 0.06);
+    border-color: rgba(0, 212, 170, 0.25);
+    outline: none;
   }
 
   .cue-text {
-    font-size: clamp(0.9rem, 2.5vw, 1rem);
-    margin-bottom: 0.75rem;
+    font-size: 12px;
+    color: #7982a9;
+    letter-spacing: 0.05em;
   }
 
   .arrow-icon {
-    width: clamp(28px, 5vw, 32px);
-    height: clamp(28px, 5vw, 32px);
+    color: #00d4aa;
     animation: bounceArrow 2.5s infinite ease-in-out;
   }
-
   @keyframes bounceArrow {
-    0%, 20%, 50%, 80%, 100% {
-      transform: translateY(0);
-    }
-    40% {
-      transform: translateY(-12px);
-    }
-    60% {
-      transform: translateY(-6px);
-    }
+    0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+    40% { transform: translateY(-10px); }
+    60% { transform: translateY(-5px); }
   }
 </style>
 
@@ -132,31 +235,27 @@ const coverPageId = "sos-pc-cover-page";
     const dismissedKey = 'sospc_cover_dismissed_session_v1';
     let isDismissed = false;
     
-    let isInteracting = false; // True during mouse/touch drag
-    let startY_interaction = 0; // Start Y for mouse/touch drag
-    let initialTranslateYOnDragStart = 0; // Cover's Y pos when drag started
-
-    let currentAppliedTranslateY = 0; // Master Y position of the cover
+    let isInteracting = false;
+    let startY_interaction = 0;
+    let initialTranslateYOnDragStart = 0;
+    let currentAppliedTranslateY = 0;
     let scrollEndTimer = null;
-    const SCROLL_SENSITIVITY = 1; // Adjust for desired scroll speed
-    const DISMISS_THRESHOLD_PERCENT = 0.4; // 40% of cover height
+    const SCROLL_SENSITIVITY = 1;
+    const DISMISS_THRESHOLD_PERCENT = 0.4;
 
     const eventHandlers = {
       scroll: null,
       keyDown: null,
       clickCue: null,
-      // Bound versions for add/removeEventListener
       boundHandleInteractionStart: null,
       boundHandleInteractionMove: null,
       boundHandleInteractionEnd: null,
     };
     
     function applyTransform(translateY) {
-      // Clamp translateY
       const minTranslateY = -coverPage.offsetHeight;
       const maxTranslateY = 0;
       translateY = Math.max(minTranslateY, Math.min(maxTranslateY, translateY));
-      
       coverPage.style.transform = `translateY(${translateY}px)`;
       currentAppliedTranslateY = translateY;
     }
@@ -166,7 +265,6 @@ const coverPageId = "sos-pc-cover-page";
       isDismissed = true;
       clearTimeout(scrollEndTimer);
 
-      // Clean up interaction listeners if any were active
       if (isInteracting) {
         document.removeEventListener('mousemove', eventHandlers.boundHandleInteractionMove);
         document.removeEventListener('mouseup', eventHandlers.boundHandleInteractionEnd);
@@ -176,21 +274,14 @@ const coverPageId = "sos-pc-cover-page";
         isInteracting = false;
       }
       
-      coverPage.style.transition = ''; // Ensure CSS transitions are active for the dismissal animation
+      coverPage.style.transition = '';
       coverPage.classList.add('dismissed');
       
-      try {
-        sessionStorage.setItem(dismissedKey, 'true');
-      } catch (e) {
-        console.warn('Session storage is not available or disabled.');
-      }
+      try { sessionStorage.setItem(dismissedKey, 'true'); } catch (e) {}
 
       const mainContent = document.querySelector('main');
-      if (mainContent) {
-        mainContent.focus({ preventScroll: true });
-      }
+      if (mainContent) mainContent.focus({ preventScroll: true });
       
-      // Remove general listeners
       document.removeEventListener('wheel', eventHandlers.scroll);
       document.removeEventListener('keydown', eventHandlers.keyDown);
       coverPage.removeEventListener('touchstart', eventHandlers.boundHandleInteractionStart);
@@ -202,34 +293,25 @@ const coverPageId = "sos-pc-cover-page";
 
     try {
       if (sessionStorage.getItem(dismissedKey) === 'true') {
-        coverPage.style.transitionProperty = 'none'; // Hide instantly
+        coverPage.style.transitionProperty = 'none';
         requestAnimationFrame(() => {
-            coverPage.classList.add('dismissed');
-            isDismissed = true; // Set state
-            requestAnimationFrame(() => { // Restore transition property for future if needed
-                coverPage.style.transitionProperty = '';
-            });
+          coverPage.classList.add('dismissed');
+          isDismissed = true;
+          requestAnimationFrame(() => { coverPage.style.transitionProperty = ''; });
         });
-        return; // Don't attach any listeners if already dismissed by session
+        return;
       }
-    } catch (e) {
-      console.warn('Session storage is not available or disabled.');
-    }
+    } catch (e) {}
 
     function handleInteractionStart(event) {
       if (isDismissed || isInteracting) return;
-
       const isTouchEvent = event.type.startsWith('touch');
-      if (!isTouchEvent && event.button !== 0) return; // Only left mouse button
-
-      if (!isTouchEvent) event.preventDefault(); // Prevent text selection/drag for mouse
-
+      if (!isTouchEvent && event.button !== 0) return;
+      if (!isTouchEvent) event.preventDefault();
       isInteracting = true;
       startY_interaction = isTouchEvent ? event.touches[0].clientY : event.clientY;
-      initialTranslateYOnDragStart = currentAppliedTranslateY; // Capture current Y pos
-      
-      coverPage.style.transition = 'none'; // Direct manipulation
-
+      initialTranslateYOnDragStart = currentAppliedTranslateY;
+      coverPage.style.transition = 'none';
       if (isTouchEvent) {
         coverPage.addEventListener('touchmove', eventHandlers.boundHandleInteractionMove, { passive: false });
         coverPage.addEventListener('touchend', eventHandlers.boundHandleInteractionEnd, { passive: false });
@@ -242,20 +324,16 @@ const coverPageId = "sos-pc-cover-page";
 
     function handleInteractionMove(event) {
       if (!isInteracting || isDismissed) return;
-      event.preventDefault(); // Prevent page scroll during active drag/swipe
-
+      event.preventDefault();
       const isTouchEvent = event.type.startsWith('touch');
       const currentPointerY = isTouchEvent ? event.touches[0].clientY : event.clientY;
-      let dragDelta = currentPointerY - startY_interaction;
-      applyTransform(initialTranslateYOnDragStart + dragDelta);
+      applyTransform(initialTranslateYOnDragStart + (currentPointerY - startY_interaction));
     }
 
     function handleInteractionEnd() {
       if (!isInteracting || isDismissed) return;
       isInteracting = false;
-      
-      coverPage.style.transition = ''; // Restore CSS transitions for snap/dismiss
-
+      coverPage.style.transition = '';
       document.removeEventListener('mousemove', eventHandlers.boundHandleInteractionMove);
       document.removeEventListener('mouseup', eventHandlers.boundHandleInteractionEnd);
       coverPage.removeEventListener('touchmove', eventHandlers.boundHandleInteractionMove);
@@ -263,12 +341,10 @@ const coverPageId = "sos-pc-cover-page";
       coverPage.removeEventListener('touchcancel', eventHandlers.boundHandleInteractionEnd);
       
       const upwardDisplacement = -currentAppliedTranslateY;
-      const dismissThresholdValue = coverPage.offsetHeight * DISMISS_THRESHOLD_PERCENT;
-
-      if (upwardDisplacement > dismissThresholdValue) {
+      if (upwardDisplacement > coverPage.offsetHeight * DISMISS_THRESHOLD_PERCENT) {
         dismissCover();
       } else {
-        applyTransform(0); // Snap back to original position
+        applyTransform(0);
       }
     }
     
@@ -279,61 +355,40 @@ const coverPageId = "sos-pc-cover-page";
     coverPage.addEventListener('touchstart', eventHandlers.boundHandleInteractionStart, { passive: false });
     coverPage.addEventListener('mousedown', eventHandlers.boundHandleInteractionStart, { passive: false });
 
-
-    eventHandlers.scroll = function handleScroll(event) {
-      if (isDismissed || isInteracting) return; // Don't scroll if dragging or dismissed
-      
-      event.preventDefault(); // Prevent page behind from scrolling
-      coverPage.style.transition = 'none'; // Direct manipulation
-
+    eventHandlers.scroll = function(event) {
+      if (isDismissed || isInteracting) return;
+      event.preventDefault();
+      coverPage.style.transition = 'none';
       applyTransform(currentAppliedTranslateY - event.deltaY * SCROLL_SENSITIVITY);
-
       clearTimeout(scrollEndTimer);
       scrollEndTimer = setTimeout(() => {
-        if (isDismissed || isInteracting) return; // Check again in case state changed during timeout
-        
-        coverPage.style.transition = ''; // Restore transitions for snap/dismiss
-        const upwardDisplacement = -currentAppliedTranslateY;
-        const dismissThresholdValue = coverPage.offsetHeight * DISMISS_THRESHOLD_PERCENT;
-
-        if (upwardDisplacement > dismissThresholdValue) {
+        if (isDismissed || isInteracting) return;
+        coverPage.style.transition = '';
+        if (-currentAppliedTranslateY > coverPage.offsetHeight * DISMISS_THRESHOLD_PERCENT) {
           dismissCover();
-        } else if (currentAppliedTranslateY !== 0) { // Only snap if not already at 0
-          applyTransform(0); // Snap back
+        } else if (currentAppliedTranslateY !== 0) {
+          applyTransform(0);
         }
-      }, 150); // Adjust timeout for scroll end detection
+      }, 150);
     };
     document.addEventListener('wheel', eventHandlers.scroll, { passive: false });
 
+    eventHandlers.clickCue = function() { if (!isDismissed) dismissCover(); };
+    if (interactionCue) interactionCue.addEventListener('click', eventHandlers.clickCue);
 
-    eventHandlers.clickCue = function handleClick() {
+    eventHandlers.keyDown = function(event) {
       if (isDismissed) return;
-      dismissCover();
-    };
-    if (interactionCue) {
-      interactionCue.addEventListener('click', eventHandlers.clickCue);
-    }
-
-    eventHandlers.keyDown = function handleKeyDown(event) {
-      if (isDismissed) return;
-      if (event.key === 'Enter' || event.key === ' ') {
-        if (document.activeElement === interactionCue) {
-           event.preventDefault();
-           dismissCover();
-        }
-      }
-      if (event.key === 'Escape') {
+      if ((event.key === 'Enter' || event.key === ' ') && document.activeElement === interactionCue) {
+        event.preventDefault();
         dismissCover();
       }
+      if (event.key === 'Escape') dismissCover();
     };
     document.addEventListener('keydown', eventHandlers.keyDown);
 
-    // Auto-focus interaction cue for accessibility
     setTimeout(() => {
-      if (!isDismissed && interactionCue && typeof interactionCue.focus === 'function') {
-        if (!coverPage.classList.contains('dismissed')) { // Check again, session might have dismissed it
-            interactionCue.focus({ preventScroll: true });
-        }
+      if (!isDismissed && interactionCue && !coverPage.classList.contains('dismissed')) {
+        interactionCue.focus({ preventScroll: true });
       }
     }, 1600);
   });
