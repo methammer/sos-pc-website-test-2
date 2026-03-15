@@ -692,6 +692,9 @@ const portfolioItems = [
 </script>
 
 <script>
+  // Scroll reveal correct :
+  // - éléments déjà dans le viewport → visibles immédiatement, pas d'animation
+  // - éléments hors viewport → animation d'entrée au scroll
   var revealObserver = new IntersectionObserver(function(entries) {
     entries.forEach(function(entry) {
       if (entry.isIntersecting) {
@@ -702,26 +705,13 @@ const portfolioItems = [
     });
   }, { threshold: 0.05 });
 
-  function initReveal() {
-    document.querySelectorAll(".service-card-new, .portfolio-card, .info-card, .stat").forEach(function(el, i) {
-      el.style.opacity = "0";
-      el.style.transform = "translateY(20px)";
-      el.style.transition = "opacity 0.4s ease " + Math.min(i * 0.02, 0.1) + "s, transform 0.4s ease " + Math.min(i * 0.02, 0.1) + "s";
-      revealObserver.observe(el);
-    });
-  }
-
-  var cp = document.getElementById("sos-pc-cover-page");
-  if (!cp || cp.classList.contains("dismissed") || sessionStorage.getItem("sospc_cover_dismissed_session_v1") === "true") {
-    initReveal();
-  } else {
-    new MutationObserver(function(mut, mo) {
-      mut.forEach(function(m) {
-        if (m.target.classList.contains("dismissed")) {
-          mo.disconnect();
-          setTimeout(initReveal, 750);
-        }
-      });
-    }).observe(cp, { attributes: true, attributeFilter: ["class"] });
-  }
+  document.querySelectorAll(".service-card-new, .portfolio-card, .info-card, .stat").forEach(function(el, i) {
+    var rect = el.getBoundingClientRect();
+    var inViewport = rect.top < window.innerHeight && rect.bottom > 0;
+    if (inViewport) return; // déjà visible, on ne touche pas
+    el.style.opacity = "0";
+    el.style.transform = "translateY(20px)";
+    el.style.transition = "opacity 0.4s ease " + Math.min(i * 0.02, 0.1) + "s, transform 0.4s ease " + Math.min(i * 0.02, 0.1) + "s";
+    revealObserver.observe(el);
+  });
 </script>
