@@ -263,9 +263,10 @@ const portfolioItems = [
     <div class="map-wrapper">
       <iframe
         title="Zone d'intervention SOS-PC"
-        src="https://www.openstreetmap.org/export/embed.html?bbox=5.8,43.9,6.4,44.3&layer=mapnik&marker=44.1,6.1"
+        src="https://maps.google.com/maps?q=Le+Castellet,+04700,+France&t=&z=13&ie=UTF8&iwloc=&output=embed"
         loading="lazy"
-        style="border:0;width:100%;height:340px;border-radius:var(--radius-lg);filter:grayscale(0.3) contrast(1.1);"
+        style="border:0;width:100%;height:340px;border-radius:var(--radius-lg);"
+        allowfullscreen=""
       ></iframe>
     </div>
   </section>
@@ -365,18 +366,6 @@ const portfolioItems = [
           </a>
         </div>
       </div>
-      <!-- Bandeau pièce jointe diagnostic -->
-      <div id="diag-attach-banner" class="diag-attach-banner" style="display:none;">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="dab-icon"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
-        <div class="dab-info">
-          <span class="dab-name mono">pré-diagnostic.json</span>
-          <span class="dab-meta mono" id="dab-meta-text">—</span>
-        </div>
-        <button class="dab-remove" onclick="sospcDetachDiag()" title="Retirer le diagnostic" type="button">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-        </button>
-      </div>
-
       <form class="contact-form" name="contact" method="POST" data-netlify="true" netlify-honeypot="bot-field">
         <input type="hidden" name="form-name" value="contact" />
         <p style="display:none"><label>Bot: <input name="bot-field" /></label></p>
@@ -398,6 +387,17 @@ const portfolioItems = [
         <div class="form-group">
           <label class="mono">message</label>
           <textarea name="message" rows="4" required placeholder="Décrivez votre besoin..."></textarea>
+        </div>
+        <!-- Bandeau pièce jointe diagnostic — dans le form -->
+        <div id="diag-attach-banner" class="diag-attach-banner" style="display:none;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="dab-icon"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+          <div class="dab-info">
+            <span class="dab-name mono">pré-diagnostic.json</span>
+            <span class="dab-meta mono" id="dab-meta-text">—</span>
+          </div>
+          <button class="dab-remove" onclick="sospcDetachDiag()" title="Retirer le diagnostic" type="button">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
         </div>
         <button type="submit" id="contact-submit-btn" class="btn-primary" style="width:100%;justify-content:center;">
           <span id="contact-submit-label">Envoyer le message</span>
