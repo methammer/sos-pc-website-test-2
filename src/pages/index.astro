@@ -365,9 +365,22 @@ const portfolioItems = [
           </a>
         </div>
       </div>
+      <!-- Bandeau pièce jointe diagnostic -->
+      <div id="diag-attach-banner" class="diag-attach-banner" style="display:none;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="dab-icon"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+        <div class="dab-info">
+          <span class="dab-name mono">pré-diagnostic.json</span>
+          <span class="dab-meta mono" id="dab-meta-text">—</span>
+        </div>
+        <button class="dab-remove" onclick="sospcDetachDiag()" title="Retirer le diagnostic" type="button">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
       <form class="contact-form" name="contact" method="POST" data-netlify="true" netlify-honeypot="bot-field">
         <input type="hidden" name="form-name" value="contact" />
         <p style="display:none"><label>Bot: <input name="bot-field" /></label></p>
+        <input type="hidden" name="diagnostic-data" id="diagnostic-data" />
         <div class="form-row">
           <div class="form-group">
             <label class="mono">nom</label>
@@ -386,8 +399,8 @@ const portfolioItems = [
           <label class="mono">message</label>
           <textarea name="message" rows="4" required placeholder="Décrivez votre besoin..."></textarea>
         </div>
-        <button type="submit" class="btn-primary" style="width:100%;justify-content:center;">
-          Envoyer le message
+        <button type="submit" id="contact-submit-btn" class="btn-primary" style="width:100%;justify-content:center;">
+          <span id="contact-submit-label">Envoyer le message</span>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
         </button>
       </form>
@@ -593,6 +606,31 @@ const portfolioItems = [
      CONTACT
   =========================== */
   .contact-section { padding: 5rem 0; }
+
+  /* Bandeau pièce jointe diagnostic */
+  .diag-attach-banner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(0,212,170,0.06);
+    border: 1px solid rgba(0,212,170,0.28);
+    border-radius: var(--radius);
+    padding: 9px 14px;
+    margin-bottom: 12px;
+    animation: dab-slide-in 0.25s ease;
+  }
+  @keyframes dab-slide-in { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:translateY(0); } }
+  .dab-icon { color: var(--accent-hex); flex-shrink: 0; }
+  .dab-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+  .dab-name { font-size: 12px; font-weight: 600; color: var(--accent-hex); }
+  .dab-meta { font-size: 10px; color: var(--text-muted); }
+  .dab-remove {
+    background: none; border: none; color: var(--text-dim);
+    cursor: pointer; padding: 3px; border-radius: 3px;
+    display: flex; align-items: center; justify-content: center;
+    transition: color 0.2s, background 0.2s; flex-shrink: 0;
+  }
+  .dab-remove:hover { color: var(--red); background: rgba(247,118,142,0.1); }
   .contact-grid { display: grid; grid-template-columns: 1fr 1.4fr; gap: 4rem; align-items: start; margin-top: 2rem; }
   .contact-grid h2 { font-size: clamp(1.8rem, 3.5vw, 2.4rem); margin-bottom: 1rem; }
   .contact-grid > div > p { color: var(--text-muted); margin-bottom: 1.5rem; line-height: 1.7; }
@@ -689,6 +727,77 @@ const portfolioItems = [
     };
     document.head.appendChild(script);
   })();
+</script>
+
+<script>
+  // ===== DIAGNOSTIC ATTACHMENT =====
+  function sospcBuildMeta(payload) {
+    var parts = [];
+    if (payload.generated) parts.push(payload.generated);
+    if (payload.score != null) parts.push('Score ' + payload.score + '/100');
+    var problems = (payload.issues || []).filter(function(i) { return i.level !== 'ok'; }).length;
+    if (problems) parts.push(problems + ' problème' + (problems > 1 ? 's' : '') + ' détecté' + (problems > 1 ? 's' : ''));
+    if ((payload.symptoms_user || []).length) parts.push((payload.symptoms_user.length) + ' symptôme(s) décrits');
+    return parts.join(' · ');
+  }
+
+  function sospcAttachDiag(payload) {
+    try {
+      document.getElementById('diagnostic-data').value = JSON.stringify(payload, null, 2);
+    } catch(e) {}
+    var meta = document.getElementById('dab-meta-text');
+    if (meta) meta.textContent = sospcBuildMeta(payload);
+    var banner = document.getElementById('diag-attach-banner');
+    if (banner) banner.style.display = 'flex';
+    var lbl = document.getElementById('contact-submit-label');
+    if (lbl) lbl.textContent = 'Envoyer + diagnostic joint';
+    // Pré-remplir le sujet
+    var subj = document.querySelector('input[name="subject"]');
+    if (subj && !subj.value) {
+      subj.value = 'Suite diagnostic SOS-PC du ' + (payload.generated || new Date().toLocaleDateString('fr-FR'));
+    }
+  }
+
+  window.sospcDetachDiag = function() {
+    try { document.getElementById('diagnostic-data').value = ''; } catch(e) {}
+    var banner = document.getElementById('diag-attach-banner');
+    if (banner) banner.style.display = 'none';
+    var lbl = document.getElementById('contact-submit-label');
+    if (lbl) lbl.textContent = 'Envoyer le message';
+    var subj = document.querySelector('input[name="subject"]');
+    if (subj && subj.value.startsWith('Suite diagnostic')) subj.value = '';
+  };
+
+  // Écoute les events du widget
+  window.addEventListener('sospc:attach-diag', function(e) { sospcAttachDiag(e.detail); });
+  window.addEventListener('sospc:attach-diag-update', function(e) { sospcAttachDiag(e.detail); });
+  window.addEventListener('sospc:diag-reset', function() { window.sospcDetachDiag(); });
+
+  // Auto-attach au chargement si un diagnostic existe en localStorage
+  document.addEventListener('DOMContentLoaded', function() {
+    try {
+      var saved = localStorage.getItem('sospc_diagnostic_v1');
+      if (!saved) return;
+      var data = JSON.parse(saved);
+      if (!data.diagReport) return;
+      var payload = {
+        generated: data.savedAt ? new Date(data.savedAt).toLocaleString('fr-FR') : '—',
+        score:     data.diagReport.score,
+        summary:   data.diagReport.summary,
+        issues:    data.diagReport.issues    || [],
+        quick_wins: data.diagReport.quick_wins || [],
+        system: {
+          os:        (data.diagData && (data.diagData.os && data.diagData.os.caption))   || '—',
+          cpu:       (data.diagData && (data.diagData.cpu && data.diagData.cpu.name))    || '—',
+          ram_total: (data.diagData && (data.diagData.ram && data.diagData.ram.total))   || '—',
+          disks:     (data.diagData && data.diagData.disks) || []
+        },
+        symptoms_user: (data.chatHistory || []).filter(function(m) { return m.role === 'user'; }).map(function(m) { return m.content; }),
+        chat_history: data.chatHistory || []
+      };
+      sospcAttachDiag(payload);
+    } catch(e) {}
+  });
 </script>
 
 <script>
