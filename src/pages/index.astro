@@ -743,7 +743,7 @@ const portfolioItems = [
 
   function sospcAttachDiag(payload) {
     try {
-      document.getElementById('diagnostic-data').value = JSON.stringify(payload, null, 2);
+      document.getElementById('diagnostic-data').value = payload.text || JSON.stringify(payload, null, 2);
     } catch(e) {}
     var meta = document.getElementById('dab-meta-text');
     if (meta) meta.textContent = sospcBuildMeta(payload);
