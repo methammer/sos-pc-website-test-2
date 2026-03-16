@@ -740,6 +740,14 @@ const { title = 'SOS-PC' } = Astro.props;
     var scoreLabel = r.score >= 70 ? 'Bon etat' : r.score >= 40 ? 'Attention requise' : 'Etat critique';
     lines.push('SCORE : ' + score + '/100  -- ' + scoreLabel);
     lines.push('');
+    var sec0 = d.security || {};
+    if (sec0.defender_enabled === false || sec0.realtime_protection === false) {
+      lines.push('/!\\ ALERTE SECURITE /!\\');
+      if (sec0.defender_enabled === false)    lines.push('  >> Antivirus Windows Defender INACTIF');
+      if (sec0.realtime_protection === false)  lines.push('  >> Protection en temps reel INACTIVE');
+      if (sec0.antivirus_signature_date)       lines.push('  >> Dernieres signatures : ' + sec0.antivirus_signature_date);
+      lines.push('');
+    }
     if (r.summary) { lines.push('RESUME'); lines.push(r.summary); lines.push(''); }
     lines.push(sep2);
     lines.push('SYSTEME');
