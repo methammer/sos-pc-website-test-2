@@ -1,7 +1,7 @@
 # SOS-PC — Handoff Document
 ## Branche : `design-alternative`
 ## Repo : `github.com/methammer/sos-pc-website-test-2`
-## Dernière mise à jour : 15 Mars 2026
+## Dernière mise à jour : 16 Mars 2026
 
 ---
 
@@ -25,270 +25,214 @@ Services : réparation PC, création web, hébergement streaming, hébergement I
 src/
   layouts/Layout.astro       — Layout global + chatbot widget flottant v8
   pages/index.astro          — Page principale (design-alternative)
-  pages/diagnostic.astro     — Page diagnostic standalone (branche main)
   pages/contact-success.astro
   components/
     Navbar.astro              — Navbar Tokyo Night avec hamburger mobile
     CoverPage.astro           — Cover page Tokyo Night (swipe to reveal)
-    AsciiBackground.astro     — Background ASCII animé
+    AsciiBackground.astro     — Background ASCII anime (a revoir)
     ThemeSwitcher.astro       — Toggle dark/light
-    LottieAnimation.astro     — Wrapper animations Lottie (non utilisé directement)
 public/
-  PC-repair/animations/      — Animation Lottie réparation PC
+  PC-repair/animations/      — Animation Lottie reparation PC
   Streaming/animations/      — Animation Lottie streaming
   web-design/animations/     — Animation Lottie web design
-  diag.ps1 → redirect vers sos-pc-diagnostic.netlify.app/diag.ps1
-netlify.toml                  — Redirects dont /diag.ps1
+  diag.ps1 -> redirect vers sos-pc-diagnostic.netlify.app/diag.ps1
+netlify.toml
 ```
 
 ### `sos-pc-diagnostic` — Les Netlify Functions
 ```
 netlify/functions/
-  analyze.js    — POST /api/analyze  — Appel Gemini via Netlify AI Gateway
+  analyze.js    — POST /api/analyze  — Gemini via Netlify AI Gateway
   chat.js       — POST /api/chat     — Chat IA avec contexte diagnostic
-  collect.js    — POST /api/collect  — Stockage données via Netlify Blobs
-  poll.js       — GET  /api/poll?s=  — Polling pour récupérer données
+  collect.js    — POST /api/collect  — Stockage donnees via Netlify Blobs
+  poll.js       — GET  /api/poll?s=  — Polling pour recuperer donnees
 public/
-  diag.ps1     — Script PowerShell collecte données PC
-package.json   — Dépendance @netlify/blobs
+  diag.ps1     — Script PowerShell collecte donnees PC (v2 etendu)
 ```
 
 ---
 
-## Design alternatif — Tokyo Night Theme
+## Design — Tokyo Night Theme
 
-### Palette CSS (définie dans Layout.astro `:root`)
+### Palette CSS (`:root` dans `Layout.astro`)
 ```css
---bg: #1a1b26          /* Fond principal */
---bg-card: #24283b     /* Cartes */
---bg-elevated: #2a2e42 /* Éléments surélevés */
---accent-hex: #00d4aa  /* Teal — couleur principale */
---accent: 0, 212, 170  /* Pour rgba() */
---text: #c0caf5        /* Texte principal */
---text-muted: #7982a9  /* Texte secondaire */
---border: #3b4261      /* Bordures */
---yellow: #e0af68      /* Avertissements */
---red: #f7768e         /* Erreurs/critique */
---blue: #7aa2f7        /* Info */
---purple: #bb9af7      /* Accent secondaire */
+--bg:          #1a1b26
+--bg-card:     #24283b
+--bg-elevated: #2a2e42
+--accent-hex:  #00d4aa
+--text:        #c0caf5
+--text-muted:  #7982a9
+--border:      #3b4261
+--yellow:      #e0af68
+--red:         #f7768e
+--blue:        #7aa2f7
+--purple:      #bb9af7
 ```
 
-### Fonts Google (chargées dans Layout.astro `<head>`)
-- `JetBrains Mono` — éléments tech, labels, code, monospace
+### Fonts
+- `JetBrains Mono` — elements tech, labels, monospace
 - `Outfit` — corps de texte, titres
 
 ---
 
-## Achievements de la session (15 Mars 2026)
+## Achievements session 15-16 Mars 2026
 
 ### 1. Section Contact — Redesign complet
-**Fichier** : `src/pages/index.astro`
+- Grille 2 colonnes, boutons compacts avec logos SVG officiels
+- Hover colore par app (Discord #5865F2, Telegram #229ED9, etc.)
+- Ajout Telegram, LinkedIn, WhatsApp (placeholder)
+- Banniere `pre-diagnostic.json` dans le form entre textarea et submit
+- Champ `<input type="hidden" name="diagnostic-data">` pour Netlify Forms
 
-- Grille 2 colonnes pour les boutons de contact
-- Logos SVG officiels de chaque app avec couleurs de marque au hover
-- Boutons compacts avec label + valeur
-- Ajout de **Telegram** (`t.me/+pWnKAEiqrJE4NzRk`), **LinkedIn** et **WhatsApp** (placeholder désactivé)
-- Couleurs hover par app : Téléphone `#25D366`, Email `#EA4335`, Discord `#5865F2`, Telegram `#229ED9`, LinkedIn `#0A66C2`, WhatsApp `#25D366`
+### 2. Animations Lottie — Cartes services
+- Chargement via CDN bodymovin (contourne le bug `define:vars` d'Astro)
+- `autoplay: false` — play au `mouseenter`, pause au `mouseleave`
+- Filtres CSS accordes aux couleurs des icones :
+  - Teal   : `sepia(1) hue-rotate(130deg) saturate(3) brightness(0.9)`
+  - Bleu   : `sepia(1) hue-rotate(195deg) saturate(4) brightness(1.1)`
+  - Purple : `sepia(1) hue-rotate(240deg) saturate(3) brightness(1.0)`
 
-### 2. Animations Lottie dans les cartes services
-**Fichier** : `src/pages/index.astro`
+### 3. Cover Page — Tokyo Night
+- Fond `#1a1b26`, badge pulsant, titre degrade teal
+- Ligne terminal decorative avec curseur clignotant
+- Orbes supprimes
+- Grid pattern desactive (`body::before { display: none }`)
 
-- Animations JSON chargées depuis `/public/PC-repair/`, `/public/Streaming/`, `/public/web-design/`
-- Chargement via CDN bodymovin (pas de composant Astro — bug `define:vars` évité)
-- Positionnées en `absolute` bas-droite des cartes, `opacity: 0.18` au repos
-- Filtre CSS pour teinte par carte (teal/bleu/purple)
-- `autoplay: false` — animation déclenchée uniquement au `mouseenter`, pausée au `mouseleave`
-- Au hover : `opacity: 0.5` + déplacement subtil
+### 4. Scroll reveal — Corrige
+- Site visible sous la cover pendant le swipe (`visibility:hidden` supprime)
+- Elements deja dans le viewport non masques (`getBoundingClientRect()` check)
 
-### 3. Cover Page — Thème Tokyo Night
-**Fichier** : `src/components/CoverPage.astro`
+### 5. Dark mode force par defaut
+Script anti-FOUC dans `<head>` — force `dark` pour les nouveaux visiteurs,
+respecte le choix explicite `light` via localStorage.
 
-- Fond `#1a1b26` (Tokyo Night) remplace le dégradé violet
-- Grid pattern teal en background (cohérent avec le reste du site)
-- Deux glow orbs animés (teal + bleu)
-- Badge avec point pulsant vert
-- Titre en dégradé `c0caf5 → teal`
-- Ligne terminal décorative avec curseur clignotant
-- Bouton scroll `// scroll to explore` en monospace
-- Logique JS de dismiss identique à l'original
+### 6. SEO — Priorites hautes
+- `<meta name="description">` propre et geolocalise
+- Open Graph complet (title, description, image, url, locale)
+- Twitter Card
+- Schema.org `LocalBusiness` (nom, tel, email, adresse 04700, zone)
+- `<link rel="canonical" href="https://sos-pc.click">`
 
-### 4. Scroll reveal — Approche corrigée
-**Fichier** : `src/pages/index.astro`
+### 7. Google Maps
+- Remplacement OpenStreetMap par Google Maps embed sans cle API
 
-- Le site est rendu immédiatement sous la cover (visible pendant le swipe)
-- `initReveal()` lancé dès le chargement sans attendre le dismiss
-- Les éléments **déjà dans le viewport** ne sont pas masqués (`getBoundingClientRect()` check)
-- Seuls les éléments hors viewport reçoivent l'animation d'entrée au scroll
+### 8. Portfolio — Images par le haut
+- `object-position: top` sur `.pc-img-wrap img`
 
-### 5. Diagnostic — Export vers formulaire de contact
-**Fichiers** : `src/layouts/Layout.astro` + `src/pages/index.astro`
-
-**Widget (Layout.astro)** :
-- Bouton `Joindre au formulaire de contact` dans le panel rapport
-- `buildDiagPayload()` compile : score, système, problèmes, symptômes utilisateur du chat, historique complet
-- Auto-attach dès que l'analyse est terminée (sans action utilisateur)
-- Mise à jour du payload après chaque message chat (nouveaux symptômes inclus)
-- Event `sospc:attach-diag` dispatché vers index.astro
-- Event `sospc:diag-reset` pour retirer la pièce jointe au reset
-
-**Formulaire (index.astro)** :
-- `<input type="hidden" name="diagnostic-data">` dans le form
-- Bannière `pré-diagnostic.json` positionnée **dans le form** entre le textarea et le bouton submit
-- Affiche : date, score, nb problèmes, nb symptômes décrits
-- Bouton `×` pour détacher le diagnostic
-- Bouton submit change de libellé : "Envoyer + diagnostic joint"
-- Auto-attach au `DOMContentLoaded` si un diagnostic existe en localStorage
-- Pré-remplit le sujet : "Suite diagnostic SOS-PC du JJ/MM/AAAA"
-
-### 6. Google Maps
-**Fichier** : `src/pages/index.astro`
-
-- Remplacement d'OpenStreetMap par Google Maps embed (sans clé API)
-- URL : `https://maps.google.com/maps?q=Le+Castellet,+04700,+France&output=embed`
-
-### 7. Migration API IA vers Gemini + Netlify AI Gateway
-**Fichiers** : `netlify/functions/analyze.js` + `netlify/functions/chat.js`
-
-- Migration de Claude Haiku (Anthropic) vers **Gemini 2.0 Flash Lite**
-- Utilisation du **Netlify AI Gateway** — plus besoin de gérer de clé API manuellement
-- Netlify injecte automatiquement `GEMINI_API_KEY` et `GOOGLE_GEMINI_BASE_URL`
+### 9. Migration IA — Netlify AI Gateway
+- `analyze.js` + `chat.js` migres vers Gemini 2.0 Flash Lite
+- Netlify AI Gateway injecte automatiquement `GEMINI_API_KEY` et `GOOGLE_GEMINI_BASE_URL`
+- **NE PAS definir `GEMINI_API_KEY` manuellement dans les env vars Netlify**
 - Header API : `x-goog-api-key` (REST Gemini v1beta)
-- `analyze.js` : prompt construit avec tableau `lines[]` (évite les template literals dans esbuild)
-- `chat.js` : gestion de l'historique Gemini (`role: "user" | "model"`) avec injection du contexte système dans le premier message user, et gestion des historiques commençant par `model`
-- CORS : `Access-Control-Allow-Origin: *` sur toutes les fonctions
 
-### 8. Notifications email formulaire
-- Configuration Netlify : **Project configuration → Notifications → Form submission notifications**
-- Email de destination : `sos.pc.04@gmail.com`
-- `Reply-To` automatique = email du visiteur (champ `name="email"` dans le form)
-- Sujet dynamique défini par le JS (via champ `name="subject"`)
+### 10. Export diagnostic — Rapport texte lisible
+`buildDiagPayload()` dans `Layout.astro` genere un rapport texte formate :
+- Separateurs `===` et `---`
+- Barres de progression disques `[####------]`
+- Alerte antivirus INACTIF en haut du rapport si Defender desactive
+- Sections : systeme, GPU, disques SMART, reseau, securite, temperatures,
+  BSOD, problemes detectes, actions rapides, symptomes utilisateur, logiciels
+- `filter(Boolean)` sur tous les tableaux (evite erreurs sur null)
+- Injecte dans `<input name="diagnostic-data">` recu dans l'email Netlify
 
----
+### 11. Reset diagnostic — Session propre
+- `sospcReset()` pose `sessionStorage.setItem('sospc_reset', '1')`
+- `DOMContentLoaded` verifie le flag avant de recharger les anciennes donnees
+- Flag efface apres generation du nouveau sessionId
+- "Nouveau scan" repart de zero meme apres rechargement de page
 
-## Chatbot widget flottant — État actuel
+### 12. Notifications email Netlify Forms
+- Email : `sos.pc.04@gmail.com`
+- Reply-To = email du visiteur
+- Sujet dynamique via champ `name="subject"`
 
-**Fichier** : inline dans `src/layouts/Layout.astro`  
+### 13. Script `diag.ps1` — Version 2
+Nouvelles donnees collectees vs v1 :
+- Pagefile utilisation, plusieurs GPU avec date driver/resolution/refresh
+- SMART disques : type SSD/NVMe, sante, heures, temperature, secteurs defaillants
+- Reseau : adaptateurs actifs, IP, test internet (`8.8.8.8`), latence DNS
+- Securite : Defender (enabled, realtime, date signatures), pare-feu (3 profils), UAC
+- Mises a jour (5 derniers hotfixes)
+- Temperatures ACPI (sans install tierce)
+- BSOD 7 derniers jours (event ID 41/1001)
+- Performance : disque I/O %, RAM %, pagefile %
+- Liste complete logiciels tiers
 
-**Flow** :
-1. Génère un session ID aléatoire (`$s='XXXXXXXX'`)
-2. Affiche la commande : `$s='XXXXXXXX'; irm https://sos-pc.click/diag.ps1 | iex`
-3. Poll `/api/poll?s=XXXXXXXX` toutes les 2 secondes
-4. Quand les données arrivent → son pop (Web Audio API) + ouverture auto + analyse Gemini
-5. Rapport + chat IA + bouton "Joindre au formulaire"
-6. Tout sauvegardé en localStorage
-
-**LocalStorage keys** :
-- `sospc_diagnostic_v1` — données système + rapport + historique chat
-- `sospc_position_v1` — position du widget (drag)
-
-**URLs API** : `https://sos-pc-diagnostic.netlify.app/api/[analyze|chat|collect|poll]`  
-**Modèle IA** : `gemini-2.0-flash-lite` via Netlify AI Gateway  
-**Clé API** : injectée automatiquement par Netlify (ne pas définir `GEMINI_API_KEY` manuellement)
-
----
-
-## Flow diagnostic complet (mis à jour)
-
-```
-1. User ouvre le widget → voit la commande avec session ID
-2. User ouvre PowerShell → colle la commande
-3. diag.ps1 collecte : OS, CPU, RAM, GPU, disques, processus, startup, Event Log
-4. diag.ps1 POST les données à /api/collect avec le session ID
-5. /api/collect stocke dans Netlify Blobs (clé: session-XXXXXXXX)
-6. Widget poll /api/poll → reçoit les données → son pop → ouverture auto
-7. /api/poll supprime la clé après lecture (one-shot)
-8. Widget appelle /api/analyze → Gemini génère rapport JSON
-9. Rapport affiché + chat disponible + bouton "Joindre au formulaire"
-10. Payload JSON auto-attaché au formulaire de contact (#contact)
-11. User remplit le form → submit → email reçu sur sos.pc.04@gmail.com
-12. Tout sauvegardé en localStorage (persist entre sessions)
-```
+Filtres logiciels :
+- Exclus : Microsoft Corporation, Windows SDK, composants .NET/Runtime
+- Exclus : composants Python multi-entrees, KB hotfixes, redistributables
+- Exclus : composants Visual Studio internes (vs_*, vcpp_*)
+- Resultat : ~30-50 logiciels tiers au lieu de 200+
 
 ---
 
-## État actuel — Ce qui fonctionne ✓
+## Ce qui reste a faire
 
-- Design Tokyo Night complet (palette, fonts, grid background)
-- Cover page Tokyo Night avec animations
-- Hero avec terminal mock animé
-- Section services avec cards + animations Lottie au hover
-- Section diagnostic avec terminal mock + bouton chatbot
-- Portfolio grid avec hover overlay
-- Section contact : grille 2 colonnes, 6 boutons avec logos SVG + hover coloré
-- Google Maps embedé (Le Castellet 04700)
-- Navbar avec hamburger mobile fonctionnel
-- Widget chatbot (morph FAB→panel, drag, son, localStorage)
-- Diagnostic IA fonctionnel via Gemini 2.0 Flash Lite + Netlify AI Gateway
-- Chat IA avec historique persisté
-- Export diagnostic → formulaire de contact (bannière pré-diagnostic.json)
-- Formulaire Netlify avec notification email vers sos.pc.04@gmail.com
-- Scroll reveal correct (éléments viewport non masqués)
-- Site pré-rendu visible pendant le swipe de la cover
+- **AsciiBackground** : revoir concept (demo particules Tokyo Night faite en chat, pas encore deploye)
+- **ThemeSwitcher** : theme light non optimise pour Tokyo Night
+- **Page `/diagnostic` standalone** : existe sur `main`, pas integree dans `design-alternative`
+- **WhatsApp** : bouton placeholder a activer quand numero disponible
+- **Heures SMART NVMe** : retourne `?` sur certains disques — limite de WMI sur NVMe
 
 ---
 
-## Ce qui reste à faire / problèmes connus
-
-- **AsciiBackground** : toujours avec l'ancien thème violet — à recolorer en teal
-- **ThemeSwitcher** : thème light non optimisé pour Tokyo Night
-- **Page diagnostic standalone** (`/diagnostic`) : existe sur `main` mais pas intégrée dans `design-alternative`
-- **WhatsApp** : bouton placeholder désactivé — à activer quand le numéro est disponible
-
----
-
-## Fichiers modifiés vs `main`
+## Fichiers modifies vs `main`
 
 | Fichier | Statut |
 |---------|--------|
-| `src/pages/index.astro` | Entièrement réécrit + export diagnostic |
-| `src/layouts/Layout.astro` | Tokyo Night + chatbot v8 + export diagnostic |
-| `src/components/Navbar.astro` | Entièrement réécrit (Tokyo Night) |
-| `src/components/CoverPage.astro` | Entièrement réécrit (Tokyo Night) |
-| `netlify/functions/analyze.js` (repo diagnostic) | Migré vers Gemini + Netlify AI Gateway |
-| `netlify/functions/chat.js` (repo diagnostic) | Migré vers Gemini + Netlify AI Gateway |
+| `src/pages/index.astro` | Entierement reecrit + export diagnostic + Lottie |
+| `src/layouts/Layout.astro` | Tokyo Night + chatbot v8 + rapport texte + reset propre |
+| `src/components/Navbar.astro` | Tokyo Night |
+| `src/components/CoverPage.astro` | Tokyo Night (orbes supprimes) |
+| `netlify/functions/analyze.js` (diagnostic) | Gemini + Netlify AI Gateway |
+| `netlify/functions/chat.js` (diagnostic) | Gemini + mapping historique corrige |
+| `public/diag.ps1` (diagnostic) | v2 etendu, filtres logiciels |
 
 ---
 
 ## Points d'attention importants
 
-1. **Ne jamais utiliser `git show branch:file > file`** — crée des null bytes qui cassent le build
-2. **Toujours utiliser `[System.IO.File]::WriteAllText()` avec `UTF8Encoding::new($false)`** pour écrire des fichiers avec accents sous PowerShell
-3. **Ne jamais utiliser `Set-Content` ou `Out-File` sans vérification** — risque de BOM UTF-8 qui casse le `netlify.toml`
-4. **`netlify.toml`** — si corrompu (BOM), le build échoue avec "Unknown character 65279". Fix : lire le fichier avec Python et réécrire sans BOM
-5. **Netlify AI Gateway** : ne pas définir `GEMINI_API_KEY` manuellement dans les env vars de `sos-pc-diagnostic` — sinon Netlify ne surcharge pas avec sa propre clé gateway
-6. **Template literals dans esbuild (Netlify Functions)** : éviter les backticks imbriqués dans les `map()` — utiliser des tableaux `lines[]` + concaténation simple
-7. **Gemini API** : format historique `role: "user" | "model"` (pas "assistant"), premier message doit être "user"
-8. **Modifications ciblées** : toujours demander le fichier actuel avant de modifier — ne pas partir du fichier local qui peut diverger du repo
+1. **Encodage** : toujours `[System.IO.File]::WriteAllText()` avec `UTF8Encoding::new($false)`
+2. **BOM UTF-8** : si build echoue avec "Unknown character 65279" — réécrire `netlify.toml` sans BOM
+3. **Netlify AI Gateway** : ne jamais definir `GEMINI_API_KEY` manuellement dans les env vars de `sos-pc-diagnostic`
+4. **Template literals esbuild** : dans les Netlify Functions, eviter les backticks imbriques dans les `map()` — utiliser tableau `lines[]` + concatenation simple
+5. **Gemini format historique** : `role: "user" | "model"` (pas "assistant"), premier message doit etre "user"
+6. **Replace PowerShell multilignes** : souvent echoue (CRLF) — preferer la methode par index de ligne avec `ReadAllLines`
+7. **`filter(Boolean)`** : les tableaux dans `diagData` peuvent contenir des `null` (ex: `network.adapters`)
+8. **Modifications ciblees** : toujours recuperer le fichier actuel avant de modifier
 
 ---
 
 ## Commandes utiles
 
 ```powershell
-# Synchro locale depuis GitHub
+# Synchro locale
 git fetch origin
 git pull origin design-alternative
 
-# Voir le diff avec main
-git diff main..design-alternative --stat
+# Annuler modifications locales non commitees
+git checkout -- src/pages/index.astro
 
-# Revenir à un commit propre si problème
+# Revenir a un commit
 git log --oneline -10
-git reset --hard <commit_hash>
+git reset --hard <hash>
 git push --force origin design-alternative
 
-# Preview local
-npm run dev
-
-# Vérifier le modèle Gemini disponible sur une clé
+# Lister modeles Gemini disponibles sur une cle
 $key = "TA_CLE"
 $r = Invoke-RestMethod "https://generativelanguage.googleapis.com/v1beta/models?key=$key"
 $r.models | Where-Object { $_.supportedGenerationMethods -contains "generateContent" } | Select-Object name, displayName
+
+# Modifier un fichier par index de ligne (methode fiable)
+$f = "src\layouts\Layout.astro"
+$lines = [System.IO.File]::ReadAllLines((Resolve-Path $f), [System.Text.UTF8Encoding]::new($false))
+$lines = $lines[0..N] + "nouvelle ligne" + $lines[(N+1)..($lines.Count-1)]
+[System.IO.File]::WriteAllLines((Resolve-Path $f), $lines, [System.Text.UTF8Encoding]::new($false))
 ```
 
 ---
 
-## Contact / infos SOS-PC
+## Contact SOS-PC
 - Tel : 07 69 56 14 91
 - Email : sos.pc.04@gmail.com
 - Discord : https://discord.gg/APFtmK5PYc
