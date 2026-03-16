@@ -654,8 +654,9 @@ const { title = 'SOS-PC' } = Astro.props;
 
   window.sospcReset = function() {
     if (!confirm('Lancer un nouveau scan ?')) return;
-    stopPolling(); clear();
-    diagData = null; diagReport = null; chatHistory = [];
+    stopPolling(); clear(); sessionStorage.setItem('sospc_reset', '1');
+    sessionStorage.setItem('sospc_fresh_session', 'true');
+    sessionStorage.setItem('sospc_fresh_session', 'true');
     sessionId = genId();
     document.getElementById('sospc-cmd').textContent = buildCmd(sessionId);
     document.getElementById('sospc-view-diag').style.display = 'none';
@@ -976,7 +977,7 @@ const { title = 'SOS-PC' } = Astro.props;
   document.addEventListener('DOMContentLoaded', function() {
     initDrag(); restorePos();
     const saved = load();
-    if (saved && saved.diagData) {
+    if (saved && saved.diagData && !sessionStorage.getItem('sospc_reset')) {
       diagData = saved.diagData; diagReport = saved.diagReport; chatHistory = saved.chatHistory || [];
       showDiagView();
       if (diagReport) setScore(diagReport.score || 50);
@@ -989,6 +990,7 @@ const { title = 'SOS-PC' } = Astro.props;
       document.getElementById('sospc-fab-text').textContent = 'Voir le diagnostic';
       document.getElementById('sospc-fab-badge').style.display = 'flex';
     } else {
+      sessionStorage.removeItem('sospc_reset');
       sessionId = genId();
       document.getElementById('sospc-cmd').textContent = buildCmd(sessionId);
     }
