@@ -792,10 +792,10 @@ const { title = 'SOS-PC' } = Astro.props;
       lines.push('');
     }
     var net = d.network || {};
-    if (net.adapters && net.adapters.length > 0) {
+    if (net.adapters && net.adapters.filter(Boolean).length > 0) {
       lines.push('RESEAU');
       lines.push('Internet     : ' + (net.internet_ok ? 'OK' : 'ECHEC') + (net.dns_latency_ms ? '  (DNS: ' + net.dns_latency_ms + 'ms)' : ''));
-      net.adapters.forEach(function(a) { lines.push('  ' + (a.type || '?') + ' : ' + a.name + (a.ip ? ' -- ' + a.ip : '') + (a.speed_mbps ? ' -- ' + a.speed_mbps + ' Mbps' : '')); });
+      net.adapters.filter(Boolean).forEach(function(a) { lines.push('  ' + (a.type || '?') + ' : ' + a.name + (a.ip ? ' -- ' + a.ip : '') + (a.speed_mbps ? ' -- ' + a.speed_mbps + ' Mbps' : '')); });
       lines.push('');
     }
     var sec = d.security || {};
