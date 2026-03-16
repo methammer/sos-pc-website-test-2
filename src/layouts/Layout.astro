@@ -761,7 +761,7 @@ const { title = 'SOS-PC' } = Astro.props;
     lines.push('RAM libre    : ' + (os.ram_free_gb || '?') + ' Go  (' + ramUsed + '% utilisee)');
     if (os.pagefile_total_gb) { lines.push('Pagefile     : ' + os.pagefile_used_gb + ' / ' + os.pagefile_total_gb + ' Go'); }
     lines.push('');
-    var gpus = d.gpus || (d.gpu ? [d.gpu] : []);
+    var gpus = (d.gpus || (d.gpu ? [d.gpu] : [])).filter(Boolean);
     if (gpus.length > 0) {
       lines.push('GPU(S)');
       gpus.forEach(function(g, i) {
@@ -770,7 +770,7 @@ const { title = 'SOS-PC' } = Astro.props;
       });
       lines.push('');
     }
-    var disks = d.disks || [];
+    var disks = (d.disks || []).filter(Boolean);
     if (disks.length > 0) {
       lines.push('DISQUES LOGIQUES');
       disks.forEach(function(disk) {
@@ -780,7 +780,7 @@ const { title = 'SOS-PC' } = Astro.props;
       });
       lines.push('');
     }
-    var physDisks = d.physical_disks || [];
+    var physDisks = (d.physical_disks || []).filter(Boolean);
     if (physDisks.length > 0) {
       lines.push('DISQUES PHYSIQUES (SMART)');
       physDisks.forEach(function(pd) {
@@ -807,7 +807,7 @@ const { title = 'SOS-PC' } = Astro.props;
       lines.push('UAC          : ' + (sec.uac_enabled ? 'Actif' : 'Inactif'));
       lines.push('');
     }
-    var temps = d.temperatures || [];
+    var temps = (d.temperatures || []).filter(Boolean);
     if (temps.length > 0) {
       lines.push('TEMPERATURES');
       temps.forEach(function(t) { lines.push('  ' + t.instance + ' : ' + t.temp_celsius + 'C'); });
@@ -856,25 +856,25 @@ const { title = 'SOS-PC' } = Astro.props;
       symptoms.forEach(function(s, i) { lines.push('  ' + (i+1) + '. "' + s + '"'); });
       lines.push('');
     }
-    var startup = d.startup || [];
+    var startup = (d.startup || []).filter(Boolean);
     if (startup.length > 0) {
       lines.push('DEMARRAGE AUTOMATIQUE (' + startup.length + ' programmes)');
       startup.forEach(function(s) { lines.push('  - ' + s); });
       lines.push('');
     }
-    var updates = (d.updates || {}).last_hotfixes || [];
+    var updates = ((d.updates || {}).last_hotfixes || []).filter(Boolean);
     if (updates.length > 0) {
       lines.push('DERNIERES MISES A JOUR');
       updates.forEach(function(u) { lines.push('  ' + u.id + ' -- ' + u.description + ' (' + u.installed_on + ')'); });
       lines.push('');
     }
-    var procs = d.procs || [];
+    var procs = (d.procs || []).filter(Boolean);
     if (procs.length > 0) {
       lines.push('TOP PROCESSUS (RAM)');
       procs.forEach(function(p) { lines.push('  ' + p.name + ' -- ' + p.ram_mb + ' Mo'); });
       lines.push('');
     }
-    var software = d.software || [];
+    var software = (d.software || []).filter(Boolean);
     if (software.length > 0) {
       lines.push(sep2);
       lines.push('LOGICIELS INSTALLES (' + software.length + ')');
