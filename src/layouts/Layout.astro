@@ -74,7 +74,7 @@ const { title = 'SOS-PC' } = Astro.props;
       <p><span class="mono">© 2026</span> SOS-PC — Tous droits réservés</p>
     </footer>
 
-    <!-- ===== SOS-PC ASSISTANT FLOTTANT v7 ===== -->
+    <!-- ===== SOS-PC ASSISTANT FLOTTANT v8 ===== -->
     <div id="sospc-widget" class="sospc-closed">
       <div id="sospc-fab-content">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
@@ -114,7 +114,7 @@ const { title = 'SOS-PC' } = Astro.props;
             <p id="sospc-privacy">🔒 Aucun fichier personnel collecté.</p>
           </div>
         </div>
-        <div id="sospc-view-diag" style="display:none;flex-direction:column;">
+        <div id="sospc-view-diag" style="display:none;">
           <div id="sospc-score-wrap">
             <span id="sospc-score-lbl">Santé du PC</span>
             <div id="sospc-score-track"><div id="sospc-score-fill"></div></div>
@@ -157,19 +157,17 @@ const { title = 'SOS-PC' } = Astro.props;
     --accent:      0, 212, 170;
     --accent-hex:  #00d4aa;
     --accent-dim:  #004d3f;
-    --accent-light: 150, 255, 230;
-    --accent-dark: 0, 100, 80;
     --yellow:      #e0af68;
     --red:         #f7768e;
     --blue:        #7aa2f7;
     --purple:      #bb9af7;
     --orange:      #ff9e64;
     --navbar-h:    64px;
-    --maxNavbarHeight: 64px;
     --font-mono:   'JetBrains Mono', monospace;
     --font-body:   'Outfit', sans-serif;
     --radius:      6px;
     --radius-lg:   12px;
+    /* — Alias pour index.astro / composants — */
     --bg-color:         var(--bg);
     --text-color:       var(--text);
     --card-bg-color:    var(--bg-card);
@@ -181,7 +179,6 @@ const { title = 'SOS-PC' } = Astro.props;
     --navbar-bg-color:  rgba(26, 27, 38, 0.92);
     --input-focus-border-color: var(--accent-hex);
     --input-focus-shadow-color: rgba(0, 212, 170, 0.2);
-    --scroll-padding-top: var(--navbar-h);
   }
 
   html:not(.dark) {
@@ -192,6 +189,7 @@ const { title = 'SOS-PC' } = Astro.props;
     --text:        #1a1b26;
     --text-muted:  #565f89;
     --text-dim:    #7982a9;
+    --accent:      0, 122, 98;
     --accent-hex:  #007a62;
     --accent-dim:  #d0f0ea;
     --bg-color:    #f0f4f8;
@@ -219,18 +217,6 @@ const { title = 'SOS-PC' } = Astro.props;
     color: var(--text);
     min-height: 100vh;
     overflow-x: hidden;
-  }
-
-  body::before { display: none;
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image:
-      linear-gradient(rgba(0,212,170,0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(0,212,170,0.03) 1px, transparent 1px);
-    background-size: 40px 40px;
-    pointer-events: none;
-    z-index: 0;
   }
 
   main {
@@ -335,7 +321,7 @@ const { title = 'SOS-PC' } = Astro.props;
      CHATBOT — Tokyo Night
   =========================== */
   body.cover-active #sospc-widget { display: none !important; }
-  
+
   #sospc-widget {
     position: fixed; bottom: 24px; right: 24px; z-index: 9999;
     font-family: var(--font-body);
@@ -446,6 +432,7 @@ const { title = 'SOS-PC' } = Astro.props;
   #sospc-score-track { flex: 1; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
   #sospc-score-fill { height: 100%; border-radius: 2px; width: 0%; transition: width 1.2s ease; }
   #sospc-score-val { font-size: 12px; font-weight: 700; color: var(--accent-hex); flex-shrink: 0; min-width: 40px; text-align: right; font-family: var(--font-mono); }
+  #sospc-view-diag { display: none; flex-direction: column; }
   #sospc-messages {
     flex: 1; overflow-y: auto; padding: 12px;
     display: flex; flex-direction: column; gap: 8px; min-height: 100px; max-height: 260px;
@@ -462,7 +449,6 @@ const { title = 'SOS-PC' } = Astro.props;
   }
   .sospc-suggestion:hover { background: rgba(0,212,170,0.18); }
 
-  /* Bouton joindre au formulaire */
   #sospc-attach-bar { padding: 4px 12px 8px; }
   #sospc-attach-btn {
     width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;
@@ -656,7 +642,6 @@ const { title = 'SOS-PC' } = Astro.props;
     if (!confirm('Lancer un nouveau scan ?')) return;
     stopPolling(); clear(); sessionStorage.setItem('sospc_reset', '1');
     sessionStorage.setItem('sospc_fresh_session', 'true');
-    sessionStorage.setItem('sospc_fresh_session', 'true');
     sessionId = genId();
     document.getElementById('sospc-cmd').textContent = buildCmd(sessionId);
     document.getElementById('sospc-view-diag').style.display = 'none';
@@ -667,7 +652,6 @@ const { title = 'SOS-PC' } = Astro.props;
     document.getElementById('sospc-messages').innerHTML = '';
     document.getElementById('sospc-suggestions').innerHTML = '';
     document.getElementById('sospc-attach-bar').style.display = 'none';
-    // Notifie index.astro pour retirer la pièce jointe
     window.dispatchEvent(new CustomEvent('sospc:diag-reset'));
     startPolling();
   };
@@ -725,13 +709,12 @@ const { title = 'SOS-PC' } = Astro.props;
     });
   }
 
-  // Construit le rapport texte lisible pour la piece jointe email
   function buildDiagPayload() {
     var d = diagData || {};
     var r = diagReport || {};
     var lines = [];
-    var sep  = '';
-    var sep2 = '';
+    var sep  = '='.repeat(52);
+    var sep2 = '-'.repeat(52);
     lines.push(sep);
     lines.push('  RAPPORT DIAGNOSTIC SOS-PC');
     lines.push('  ' + new Date().toLocaleString('fr-FR'));
@@ -773,7 +756,7 @@ const { title = 'SOS-PC' } = Astro.props;
     var gpus = (d.gpus || (d.gpu ? [d.gpu] : [])).filter(Boolean);
     if (gpus.length > 0) {
       lines.push('GPU(S)');
-      gpus.forEach(function(g, i) {
+      gpus.forEach(function(g) {
         lines.push('  ' + (g.name || '?') + (g.ram_mb ? ' -- ' + g.ram_mb + ' Mo VRAM' : '') + (g.driver ? ' -- driver ' + g.driver : '') + (g.driver_date ? ' (' + g.driver_date + ')' : ''));
         if (g.resolution) lines.push('  Resolution : ' + g.resolution + (g.refresh_hz ? ' @ ' + g.refresh_hz + 'Hz' : ''));
       });
@@ -909,15 +892,11 @@ const { title = 'SOS-PC' } = Astro.props;
     };
   }
 
-  // Bouton "Joindre au formulaire"
   window.sospcAttachToForm = function() {
     const payload = buildDiagPayload();
-    // Envoie à index.astro via event
     window.dispatchEvent(new CustomEvent('sospc:attach-diag', { detail: payload }));
-    // Scroll vers #contact
     const section = document.getElementById('contact');
     if (section) section.scrollIntoView({ behavior: 'smooth' });
-    // Feedback visuel sur le bouton
     const btn = document.getElementById('sospc-attach-btn');
     if (btn) {
       btn.classList.add('attached');
@@ -947,7 +926,6 @@ const { title = 'SOS-PC' } = Astro.props;
       if ((diagReport?.issues||[]).some(i => i.level !== 'ok')) { const cta = 'Nos techniciens peuvent résoudre ces problèmes. Voulez-vous être contacté ?'; addMsg('bot', cta); chatHistory.push({role:'assistant', content: cta}); }
       showSuggestions(['Expliquer le problème', 'Améliorer les perfs', 'Contacter SOS-PC']);
       save();
-      // Montre le bouton joindre + auto-attache au form
       document.getElementById('sospc-attach-bar').style.display = 'block';
       window.dispatchEvent(new CustomEvent('sospc:attach-diag', { detail: buildDiagPayload() }));
     })
@@ -966,7 +944,6 @@ const { title = 'SOS-PC' } = Astro.props;
     .then(json => {
       typing.remove(); const reply = json.message || 'Erreur.';
       addMsg('bot', reply); chatHistory.push({role:'assistant', content: reply});
-      // Met à jour la pièce jointe avec les nouveaux symptômes du chat
       save();
       window.dispatchEvent(new CustomEvent('sospc:attach-diag-update', { detail: buildDiagPayload() }));
     })

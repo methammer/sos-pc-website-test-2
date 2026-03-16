@@ -50,9 +50,8 @@
     let grid: { char: string; color: string }[][] = [];
     
     let lastCharUpdateTime = 0;
-    let mouseX = -Infinity; 
+    let mouseX = -Infinity;
     let mouseY = -Infinity;
-    let hasLoggedEffect = false;
 
     // --- Helper Functions for Color Manipulation ---
     function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
@@ -167,12 +166,7 @@
               displayColor = darkenColor(originalColor, darkenFactor);
             }
 
-            if (!hasLoggedEffect && displayColor !== originalColor) {
-              // Uncomment for debugging color changes
-              // console.log(`AsciiBackground: Effect! Theme: ${isDarkMode ? 'Dark' : 'Light'}, Dist: ${distanceToMouse.toFixed(0)}, ProxFactor: ${proximityFactor.toFixed(2)}, Intensity: ${intensity.toFixed(2)}, Orig: ${originalColor}, New: ${displayColor}`);
-              hasLoggedEffect = true; 
-              setTimeout(() => { hasLoggedEffect = false; }, 500);
-            }
+
           }
           
           ctx.fillStyle = displayColor;
